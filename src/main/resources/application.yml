@@ -1,0 +1,50 @@
+# App info (for actuator)
+info:
+  app:
+    name: CCS Question and Answer Service API
+    description: The Question and Answer Service API for the CrownCommercialService Contract Award Service
+    version: 1.0.0
+
+# Server configuration (primarily for local dev)
+server:
+  port: 4000
+  error:
+    whitelabel:
+      enabled: false
+
+# Cache length
+caching:
+  # Primary cache - 1 hour, 500 entries
+  primary:
+    cacheLength: 3600
+    heapSize: 500
+
+# Error and Spring configuration
+spring:
+  profiles:
+    active: local
+  cloud:
+    aws:
+      region:
+        static: eu-west-2
+  config:
+    import: optional:aws-parameterstore:/qanda/api/
+  mvc:
+    throw-exception-if-no-handler-found: true
+
+# Actuator config
+management:
+  security:
+    enabled: false
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true
