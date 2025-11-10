@@ -1,0 +1,4 @@
+# Rollbar configuration items
+rollbar:
+  accessToken: 11111111
+  env: test
