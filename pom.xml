@@ -34,7 +34,7 @@
         <jackson-annotations.version>2.20</jackson-annotations.version>
         <commons.version>2.20.0</commons.version>
         <commonscsv.version>1.14.1</commonscsv.version>
-        <aws.version>3.4.0</aws.version>
+        <aws.version>3.4.1</aws.version>
         <jsoup.version>1.21.2</jsoup.version>
         <guava.version>33.5.0-jre</guava.version>
         <mime.version>4.5.14</mime.version>
