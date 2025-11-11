@@ -20,7 +20,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <springboot.version>3.5.7</springboot.version>
         <selenium.version>4.38.0</selenium.version>
-        <junitapi.version>6.0.0</junitapi.version>
+        <junitapi.version>6.0.1</junitapi.version>
         <cucumber.version>7.31.0</cucumber.version>
         <testng.version>7.11.0</testng.version>
         <rollbar.version>2.0.0</rollbar.version>
