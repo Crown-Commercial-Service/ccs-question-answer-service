@@ -4,8 +4,8 @@ import com.rollbar.notifier.Rollbar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
-import uk.gov.crowncommercial.dts.qas.model.generated.QuestionWrite;
-import uk.gov.crowncommercial.dts.qas.model.generated.QuestionWriteResponse;
+import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
+import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
 import uk.gov.ccs.services.QuestionService;
 
 import java.util.List;

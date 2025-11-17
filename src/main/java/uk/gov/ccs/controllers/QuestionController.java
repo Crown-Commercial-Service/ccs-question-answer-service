@@ -8,14 +8,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.ccs.BLL.QuestionLogicClient;
 import uk.gov.ccs.entity.Questions;
 import uk.gov.ccs.services.QuestionService;
-import uk.gov.crowncommercial.dts.qas.model.generated.QuestionWrite;
-import uk.gov.crowncommercial.dts.qas.model.generated.QuestionWriteResponse;
+import uk.gov.ccs.dts.qas.model.generated.Question;
+import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
+import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +26,7 @@ import java.util.Optional;
  * QuestionController to handle question related CRUD operations.
  */
 @RestController
-@RequestMapping("/questions")
+@RequestMapping(path = "/questions", produces = MediaType.APPLICATION_JSON_VALUE)
 public class QuestionController extends BaseController {
 
     @Autowired
@@ -32,6 +34,14 @@ public class QuestionController extends BaseController {
 
     @Autowired
     private QuestionLogicClient questionLogicClient;
+
+    @GetMapping("/{eventID}")
+    public ResponseEntity<List<Question>> getQuestions(@PathVariable("eventID") final String eventId) {
+
+        return ResponseEntity
+                .ok(questionService.getQuestionsWithEventId(eventId));
+    }
+
 
     /**
      * GET endpoint to retrieve all questions
@@ -50,26 +60,7 @@ public class QuestionController extends BaseController {
         }
     }
 
-    /**
-     * GET endpoint to retrieve a question by ID
-     * 
-     * Usage: GET http://localhost:4000/questions/{id}
-     */
-    @GetMapping("/{id}")
-    public ResponseEntity<Questions> getQuestionById(@PathVariable Long id) {
-        log.info("GET /questions/{} - Retrieving question by ID", id);
-        try {
-            Optional<Questions> question = questionService.getQuestionById(id);
-            if (question.isPresent()) {
-                return ResponseEntity.ok(question.get());
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception ex) {
-            log.error("Error retrieving question with ID: {}", id, ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
+
 
 //    @PostMapping
 //    public ResponseEntity<QuestionWriteResponse> createQuestions()  {

@@ -7,18 +7,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ccs.entity.Questions;
-import uk.gov.ccs.repo.QuestionRepo;
-import uk.gov.crowncommercial.dts.qas.model.generated.Criterion;
-import uk.gov.crowncommercial.dts.qas.model.generated.Question;
-import uk.gov.crowncommercial.dts.qas.model.generated.QuestionGroup;
-import uk.gov.crowncommercial.dts.qas.model.generated.QuestionWrite;
-import uk.gov.crowncommercial.dts.qas.model.generated.QuestionWriteResponse;
+import uk.gov.ccs.repo.QuestionRepository;
+import uk.gov.ccs.dts.qas.model.generated.Criterion;
+import uk.gov.ccs.dts.qas.model.generated.Question;
+import uk.gov.ccs.dts.qas.model.generated.QuestionGroup;
+import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
+import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Service to handle question-related business logic
@@ -26,7 +27,7 @@ import java.util.Optional;
 @Service
 public class QuestionService {
     @Autowired
-    private QuestionRepo questionRepo;
+    private QuestionRepository questionRepository;
 
     @Autowired
     private Rollbar rollbar;
@@ -41,7 +42,7 @@ public class QuestionService {
      */
     public List<Questions> getAllQuestions() {
         try {
-            return questionRepo.findAll();
+            return questionRepository.findAll();
         } catch (Exception ex) {
             rollbar.error(ex, "Error fetching all questions");
             throw ex;
@@ -53,7 +54,7 @@ public class QuestionService {
      */
     public Optional<Questions> getQuestionById(Long id) {
         try {
-            return questionRepo.findById(id);
+            return questionRepository.findById(id);
         } catch (Exception ex) {
             rollbar.error(ex, "Error fetching question with ID: " + id);
             throw ex;
@@ -78,7 +79,7 @@ public class QuestionService {
             validateQuestionData(questionWrite);
 
             // Get existing questions for this event ID (to preserve ones not in payload)
-            List<Questions> existingQuestions = questionRepo.findByEventId(questionWrite.getEventId());
+            List<Questions> existingQuestions = questionRepository.findByEventId(questionWrite.getEventId());
             
             // Create a map of existing questions by questionId for quick lookup
             java.util.Map<String, Questions> existingQuestionsMap = new java.util.HashMap<>();
@@ -87,7 +88,7 @@ public class QuestionService {
             }
 
             List<Questions> savedQuestions = new ArrayList<>();
-            OffsetDateTime now = OffsetDateTime.now();
+            Timestamp now = new Timestamp(System.currentTimeMillis());
             java.util.Set<String> processedQuestionIds = new java.util.HashSet<>();
 
             // Iterate through each criterion
@@ -127,7 +128,7 @@ public class QuestionService {
                         
                         // Only save if data has changed (to avoid unnecessary updates)
                         if (existingQuestion == null || hasDataChanged(existingQuestion, questionEntity)) {
-                            savedQuestions.add(questionRepo.save(questionEntity));
+                            savedQuestions.add(questionRepository.save(questionEntity));
                         } else {
                             savedQuestions.add(existingQuestion);
                         }
@@ -146,7 +147,7 @@ public class QuestionService {
             response.setAgreementId(questionWrite.getAgreementId());
             response.setLotId(questionWrite.getLotId());
             if (!savedQuestions.isEmpty()) {
-                response.setId(savedQuestions.get(0).getId());
+                response.setId(savedQuestions.get(0).getId().longValue());
             }
 
             return response;
@@ -240,7 +241,7 @@ public class QuestionService {
             Questions existing,
             String eventId, String agreementId, String lotId,
             Criterion criterion, QuestionGroup group, Question question,
-            OffsetDateTime now) {
+            Timestamp now) {
         
         // Update all fields except ID and createdAt
         existing.setEventId(eventId);
@@ -354,7 +355,7 @@ public class QuestionService {
     private Questions mapToQuestionEntity(
             String eventId, String agreementId, String lotId,
             Criterion criterion, QuestionGroup group, Question question,
-            OffsetDateTime now) {
+            Timestamp now) {
         
         Questions entity = Questions.builder()
             .eventId(eventId)
@@ -392,6 +393,36 @@ public class QuestionService {
         }
 
         return entity;
+    }
+    
+    /**
+     * Returns list of question details based on eventId
+     * @param eventId
+     * @return {@link List<Question>}
+     *
+     */
+    // Not sure if we are caching yet
+    //@Cacheable(value = "qAndACache", key = "#root.methodName")
+    public List<Question> getQuestionsWithEventId(final String eventId) {
+
+        return questionRepository
+                .findAllByEventIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(eventId)
+                .stream()
+                .map(this::mapQuestionEntityWithApiResponse)
+                .collect(Collectors.toList());
+    }
+
+    private Question mapQuestionEntityWithApiResponse(Questions q) {
+
+        return new Question(q.getQuestionId(),
+                q.getQuestionTitle(),
+                q.getQuestionDataType(),
+                BigDecimal.valueOf(q.getQuestionOrder()),
+                q.getQuestionAnswered(),
+                q.getQuestionMandatory(),
+                q.getQuestionMultiAnswer(),
+                q.getQuestionType(),
+                q.getIsLegacyQuestion());
     }
 }
 

@@ -8,8 +8,10 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-import uk.gov.crowncommercial.dts.qas.model.generated.Criterion;
-import uk.gov.crowncommercial.dts.qas.model.generated.QuestionWrite;
+import uk.gov.ccs.dts.qas.model.generated.Criterion;
+import uk.gov.ccs.dts.qas.model.generated.Question;
+import uk.gov.ccs.dts.qas.model.generated.QuestionGroup;
+import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -174,10 +176,10 @@ public class AgreementServiceClient {
             Object requirementGroupsObj = criteriaMap.get("requirementGroups");
             if (requirementGroupsObj instanceof List) {
                 List<Map<String, Object>> requirementGroupsList = (List<Map<String, Object>>) requirementGroupsObj;
-                List<uk.gov.crowncommercial.dts.qas.model.generated.QuestionGroup> questionGroups = new ArrayList<>();
+                List<QuestionGroup> questionGroups = new ArrayList<>();
                 
                 for (Map<String, Object> groupMap : requirementGroupsList) {
-                    uk.gov.crowncommercial.dts.qas.model.generated.QuestionGroup questionGroup = parseQuestionGroup(groupMap);
+                    QuestionGroup questionGroup = parseQuestionGroup(groupMap);
                     if (questionGroup != null) {
                         questionGroups.add(questionGroup);
                     }
@@ -201,10 +203,9 @@ public class AgreementServiceClient {
      * and requirements (from OCDS.requirements).
      */
     @SuppressWarnings("unchecked")
-    private uk.gov.crowncommercial.dts.qas.model.generated.QuestionGroup parseQuestionGroup(Map<String, Object> groupMap) {
+    private QuestionGroup parseQuestionGroup(Map<String, Object> groupMap) {
         try {
-            uk.gov.crowncommercial.dts.qas.model.generated.QuestionGroup questionGroup = 
-                new uk.gov.crowncommercial.dts.qas.model.generated.QuestionGroup();
+            QuestionGroup questionGroup = new QuestionGroup();
             
             // Extract OCDS fields
             Object ocdsObj = groupMap.get("OCDS");
@@ -227,10 +228,10 @@ public class AgreementServiceClient {
                 Object requirementsObj = ocdsMap.get("requirements");
                 if (requirementsObj instanceof List) {
                     List<Map<String, Object>> requirementsList = (List<Map<String, Object>>) requirementsObj;
-                    List<uk.gov.crowncommercial.dts.qas.model.generated.Question> questions = new ArrayList<>();
+                    List<Question> questions = new ArrayList<>();
                     
                     for (Map<String, Object> requirementMap : requirementsList) {
-                        uk.gov.crowncommercial.dts.qas.model.generated.Question question = parseQuestion(requirementMap);
+                        Question question = parseQuestion(requirementMap);
                         if (question != null) {
                             questions.add(question);
                         }
@@ -330,10 +331,9 @@ public class AgreementServiceClient {
      * and isLegacyQuestion (set to true for template data).
      */
     @SuppressWarnings("unchecked")
-    private uk.gov.crowncommercial.dts.qas.model.generated.Question parseQuestion(Map<String, Object> requirementMap) {
+    private Question parseQuestion(Map<String, Object> requirementMap) {
         try {
-            uk.gov.crowncommercial.dts.qas.model.generated.Question question = 
-                new uk.gov.crowncommercial.dts.qas.model.generated.Question();
+            Question question = new Question();
             
             // Set isLegacyQuestion to true for template data
             question.setIsLegacyQuestion(true);
