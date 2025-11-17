@@ -2,3 +2,18 @@
 rollbar:
   accessToken: 11111111
   env: test
+
+# Test database configuration - use in-memory HSQLDB
+spring:
+  datasource:
+    url: jdbc:hsqldb:mem:testdb
+    driver-class-name: org.hsqldb.jdbcDriver
+    username: sa
+    password: 
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.HSQLDialect

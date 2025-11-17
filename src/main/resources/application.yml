@@ -48,3 +48,8 @@ management:
   info:
     env:
       enabled: true
+
+# External services information
+external-services:
+  agreements-service:
+    data-templates-path: /agreements-service/agreements/{agreement-id}/lots/{lot-id}/event-types/{event-type}/data-templates

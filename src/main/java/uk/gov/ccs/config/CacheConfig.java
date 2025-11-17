@@ -36,6 +36,9 @@ public class CacheConfig {
 
         // Establish primary cache/s
         cacheManager.createCache("qAndACache", primaryCacheConfig);
+        
+        // Establish questions cache for question-related operations
+        cacheManager.createCache("questions", primaryCacheConfig);
 
         return cacheManager;
     }

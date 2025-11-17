@@ -2,6 +2,10 @@ package uk.gov.ccs.exceptions;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.NoHandlerFoundException;
@@ -40,6 +44,26 @@ public class GlobalErrorHandler extends BaseController {
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
         return Constants.responses_Error;
+    }
+
+    /**
+     * Handles validation errors from @Valid annotation
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<String> handleValidationException(MethodArgumentNotValidException ex) {
+        rollbar.warning("Validation error: " + ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Validation error: " + ex.getMessage());
+    }
+
+    /**
+     * Handles JSON parsing/deserialization errors
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<String> handleMessageNotReadableException(HttpMessageNotReadableException ex) {
+        rollbar.warning("Invalid request body: " + ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Invalid request body: " + ex.getMostSpecificCause().getMessage());
     }
 
     /**
