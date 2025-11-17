@@ -61,16 +61,6 @@ public class QuestionController extends BaseController {
     }
 
 
-
-//    @PostMapping
-//    public ResponseEntity<QuestionWriteResponse> createQuestions()  {
-//
-//        log.error("Error retrieving question with ID: {}");
-//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-//
-//
-//    }
-
     /**
      * POST endpoint to create questions.
      * 

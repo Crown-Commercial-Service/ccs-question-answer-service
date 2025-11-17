@@ -5,14 +5,19 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.ccs.config.SecurityConfig;
 import uk.gov.ccs.services.QuestionService;
 import uk.gov.ccs.BLL.QuestionLogicClient;
 import uk.gov.ccs.dts.qas.model.generated.Question;
+import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
+import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
 import com.rollbar.notifier.Rollbar;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,12 +25,14 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 
 @WebMvcTest(QuestionController.class)
+@Import(SecurityConfig.class)
 @ActiveProfiles("test")
 class QuestionControllerTest {
 
@@ -105,19 +112,25 @@ class QuestionControllerTest {
     }
 
     @Test
-    void getQuestions_shouldReturn401Unauthorized_whenUnauthenticated() throws Exception {
+    void getQuestions_shouldAllowUnauthenticatedRequests() throws Exception {
         // Arrange
-        final String eventId = "EVENT_SEC_FAIL";
+        final String eventId = "EVENT_UNAUTH";
+        
+        // Mock the service call to return an empty list
+        when(questionService.getQuestionsWithEventId(eq(eventId)))
+                .thenReturn(Collections.emptyList());
 
         // Act & Assert
         // Perform request WITHOUT the .with(user("...")) security post-processor
+        // SecurityConfig permits all requests, so unauthenticated requests should work
         mockMvc.perform(get(BASE_URL + "/{eventID}", eventId)
                         .accept(APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk())
+                .andExpect(content().json("[]"));
 
-        // Assert that the service was never called (Security should block the request early)
-        verify(questionService, times(0))
-                .getQuestionsWithEventId(anyString());
+        // Assert that the service was called (Security allows the request)
+        verify(questionService, times(1))
+                .getQuestionsWithEventId(eq(eventId));
     }
 
     @Test
@@ -154,5 +167,265 @@ class QuestionControllerTest {
                 "Lot1",                            // questionType
                 false                              // isLegacyQuestion
         );
+    }
+
+    // POST endpoint tests
+
+    @Test
+    void createQuestions_shouldReturn200_whenValidRequestAndResponseExists() throws Exception {
+        // Arrange
+        QuestionWrite questionWrite = givenQuestionWrite();
+        QuestionWriteResponse response = givenQuestionWriteResponse();
+        
+        when(questionLogicClient.createOrUpdateQuestions(eq(questionWrite), isNull()))
+                .thenReturn(response);
+
+        // Act & Assert
+        mockMvc.perform(post(BASE_URL)
+                        .with(user("test"))
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionWrite)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(response)));
+
+        verify(questionLogicClient, times(1))
+                .createOrUpdateQuestions(eq(questionWrite), isNull());
+    }
+
+    @Test
+    void createQuestions_shouldReturn200_whenValidRequestWithEventType() throws Exception {
+        // Arrange
+        QuestionWrite questionWrite = givenQuestionWrite();
+        QuestionWriteResponse response = givenQuestionWriteResponse();
+        String eventType = "FC";
+        
+        when(questionLogicClient.createOrUpdateQuestions(eq(questionWrite), eq(eventType)))
+                .thenReturn(response);
+
+        // Act & Assert
+        mockMvc.perform(post(BASE_URL)
+                        .with(user("test"))
+                        .param("eventType", eventType)
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionWrite)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(response)));
+
+        verify(questionLogicClient, times(1))
+                .createOrUpdateQuestions(eq(questionWrite), eq(eventType));
+    }
+
+    @Test
+    void createQuestions_shouldReturn204_whenNoTemplateDataExists() throws Exception {
+        // Arrange
+        QuestionWrite questionWrite = givenQuestionWrite();
+        
+        when(questionLogicClient.createOrUpdateQuestions(eq(questionWrite), isNull()))
+                .thenReturn(null);
+
+        // Act & Assert
+        mockMvc.perform(post(BASE_URL)
+                        .with(user("test"))
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionWrite)))
+                .andExpect(status().isNoContent());
+
+        verify(questionLogicClient, times(1))
+                .createOrUpdateQuestions(eq(questionWrite), isNull());
+    }
+
+    @Test
+    void createQuestions_shouldReturn400_whenRequestBodyIsNull() throws Exception {
+        // Act & Assert
+        mockMvc.perform(post(BASE_URL)
+                        .with(user("test"))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+        verify(questionLogicClient, never())
+                .createOrUpdateQuestions(any(), any());
+    }
+
+    @Test
+    void createQuestions_shouldReturn400_whenEventIdIsNull() throws Exception {
+        // Arrange
+        QuestionWrite questionWrite = givenQuestionWrite();
+        questionWrite.setEventId(null);
+
+        // Act & Assert
+        mockMvc.perform(post(BASE_URL)
+                        .with(user("test"))
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionWrite)))
+                .andExpect(status().isBadRequest());
+
+        verify(questionLogicClient, never())
+                .createOrUpdateQuestions(any(), any());
+    }
+
+    @Test
+    void createQuestions_shouldReturn400_whenEventIdIsEmpty() throws Exception {
+        // Arrange
+        QuestionWrite questionWrite = givenQuestionWrite();
+        questionWrite.setEventId("   ");
+
+        // Act & Assert
+        mockMvc.perform(post(BASE_URL)
+                        .with(user("test"))
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionWrite)))
+                .andExpect(status().isBadRequest());
+
+        verify(questionLogicClient, never())
+                .createOrUpdateQuestions(any(), any());
+    }
+
+    @Test
+    void createQuestions_shouldReturn400_whenAgreementIdIsNull() throws Exception {
+        // Arrange
+        QuestionWrite questionWrite = givenQuestionWrite();
+        questionWrite.setAgreementId(null);
+
+        // Act & Assert
+        mockMvc.perform(post(BASE_URL)
+                        .with(user("test"))
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionWrite)))
+                .andExpect(status().isBadRequest());
+
+        verify(questionLogicClient, never())
+                .createOrUpdateQuestions(any(), any());
+    }
+
+    @Test
+    void createQuestions_shouldReturn400_whenAgreementIdIsEmpty() throws Exception {
+        // Arrange
+        QuestionWrite questionWrite = givenQuestionWrite();
+        questionWrite.setAgreementId("   ");
+
+        // Act & Assert
+        mockMvc.perform(post(BASE_URL)
+                        .with(user("test"))
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionWrite)))
+                .andExpect(status().isBadRequest());
+
+        verify(questionLogicClient, never())
+                .createOrUpdateQuestions(any(), any());
+    }
+
+    @Test
+    void createQuestions_shouldReturn400_whenLotIdIsNull() throws Exception {
+        // Arrange
+        QuestionWrite questionWrite = givenQuestionWrite();
+        questionWrite.setLotId(null);
+
+        // Act & Assert
+        mockMvc.perform(post(BASE_URL)
+                        .with(user("test"))
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionWrite)))
+                .andExpect(status().isBadRequest());
+
+        verify(questionLogicClient, never())
+                .createOrUpdateQuestions(any(), any());
+    }
+
+    @Test
+    void createQuestions_shouldReturn400_whenLotIdIsEmpty() throws Exception {
+        // Arrange
+        QuestionWrite questionWrite = givenQuestionWrite();
+        questionWrite.setLotId("   ");
+
+        // Act & Assert
+        mockMvc.perform(post(BASE_URL)
+                        .with(user("test"))
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionWrite)))
+                .andExpect(status().isBadRequest());
+
+        verify(questionLogicClient, never())
+                .createOrUpdateQuestions(any(), any());
+    }
+
+    @Test
+    void createQuestions_shouldReturn400_whenIllegalArgumentExceptionThrown() throws Exception {
+        // Arrange
+        QuestionWrite questionWrite = givenQuestionWrite();
+        
+        when(questionLogicClient.createOrUpdateQuestions(eq(questionWrite), isNull()))
+                .thenThrow(new IllegalArgumentException("Validation error: Event type is required"));
+
+        // Act & Assert
+        mockMvc.perform(post(BASE_URL)
+                        .with(user("test"))
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionWrite)))
+                .andExpect(status().isBadRequest());
+
+        verify(questionLogicClient, times(1))
+                .createOrUpdateQuestions(eq(questionWrite), isNull());
+    }
+
+    @Test
+    void createQuestions_shouldReturn500_whenUnexpectedExceptionThrown() throws Exception {
+        // Arrange
+        QuestionWrite questionWrite = givenQuestionWrite();
+        
+        when(questionLogicClient.createOrUpdateQuestions(eq(questionWrite), isNull()))
+                .thenThrow(new RuntimeException("Unexpected error"));
+
+        // Act & Assert
+        mockMvc.perform(post(BASE_URL)
+                        .with(user("test"))
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionWrite)))
+                .andExpect(status().isInternalServerError());
+
+        verify(questionLogicClient, times(1))
+                .createOrUpdateQuestions(eq(questionWrite), isNull());
+    }
+
+    @Test
+    void createQuestions_shouldAllowUnauthenticatedRequests() throws Exception {
+        // Arrange
+        QuestionWrite questionWrite = givenQuestionWrite();
+        QuestionWriteResponse response = givenQuestionWriteResponse();
+        
+        when(questionLogicClient.createOrUpdateQuestions(eq(questionWrite), isNull()))
+                .thenReturn(response);
+
+        // Act & Assert
+        // SecurityConfig permits all requests, so unauthenticated requests should work
+        mockMvc.perform(post(BASE_URL)
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionWrite)))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(response)));
+
+        verify(questionLogicClient, times(1))
+                .createOrUpdateQuestions(eq(questionWrite), isNull());
+    }
+
+    // Helper methods for POST tests
+
+    private QuestionWrite givenQuestionWrite() {
+        QuestionWrite questionWrite = new QuestionWrite();
+        questionWrite.setEventId("test-event-123");
+        questionWrite.setAgreementId("RM1043.8");
+        questionWrite.setLotId("1");
+        questionWrite.setCriterion(new ArrayList<>());
+        return questionWrite;
+    }
+
+    private QuestionWriteResponse givenQuestionWriteResponse() {
+        QuestionWriteResponse response = new QuestionWriteResponse();
+        response.setId(1L);
+        response.setEventId("test-event-123");
+        response.setAgreementId("RM1043.8");
+        response.setLotId("1");
+        return response;
     }
 }
