@@ -193,7 +193,7 @@ class QuestionControllerTest {
                         .with(user("test"))
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(questionWrite)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(response)));
 
@@ -217,7 +217,7 @@ class QuestionControllerTest {
                         .param("eventType", eventType)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(questionWrite)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(response)));
 
@@ -410,7 +410,7 @@ class QuestionControllerTest {
         mockMvc.perform(post(BASE_URL)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(questionWrite)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().json(objectMapper.writeValueAsString(response)));
 
         verify(questionLogicClient, times(1))

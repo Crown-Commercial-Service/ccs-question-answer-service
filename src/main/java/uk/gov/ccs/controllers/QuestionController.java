@@ -5,12 +5,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import uk.gov.ccs.BLL.QuestionLogicClient;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
 import uk.gov.ccs.entity.Questions;
 import uk.gov.ccs.exceptions.ResourceNotFoundException;
 
+import java.net.URI;
 import java.util.List;
 
 /**
@@ -98,7 +100,14 @@ public class QuestionController extends BaseController {
             }
 
             log.debug("POST /questions - Successfully created/updated questions for eventId: {}", questionWrite.getEventId());
-            return ResponseEntity.ok(response);
+            URI location = ServletUriComponentsBuilder
+                    .fromCurrentRequest()
+                    .path("/{eventId}")
+                    .buildAndExpand(response.getEventId())
+                    .toUri();
+            return ResponseEntity
+                    .created(location)
+                    .body(response);
 
         } catch (IllegalArgumentException ex) {
             log.warn("POST /questions - Validation error: {}", ex.getMessage());
