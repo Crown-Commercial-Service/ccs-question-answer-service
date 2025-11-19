@@ -102,8 +102,8 @@ public class QuestionController extends BaseController {
             log.debug("POST /questions - Successfully created/updated questions for eventId: {}", questionWrite.getEventId());
             URI location = ServletUriComponentsBuilder
                     .fromCurrentRequest()
-                    .path("/{eventId}")
-                    .buildAndExpand(response.getEventId())
+                    .path("/{eventType}")
+                    .buildAndExpand(eventType)
                     .toUri();
             return ResponseEntity
                     .created(location)
