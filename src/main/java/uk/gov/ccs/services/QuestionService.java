@@ -8,11 +8,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ccs.entity.Questions;
 import uk.gov.ccs.repo.QuestionRepository;
+import uk.gov.ccs.clients.AgreementsClient;
+import uk.gov.ccs.mapper.DataTemplateMapper;
 import uk.gov.ccs.dts.qas.model.generated.Criterion;
 import uk.gov.ccs.dts.qas.model.generated.Question;
 import uk.gov.ccs.dts.qas.model.generated.QuestionGroup;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
+import uk.gov.ccs.model.agreements.DataTemplate;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -33,7 +36,13 @@ public class QuestionService {
     private Rollbar rollbar;
 
     @Autowired
-    private AgreementServiceClient agreementServiceClient;
+    private AgreementsClient agreementsClient;
+    
+    @Autowired
+    private DataTemplateMapper dataTemplateMapper;
+    
+    @org.springframework.beans.factory.annotation.Value("${external-services.agreements-service.api-key:}")
+    private String agreementServiceApiKey;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -328,10 +337,19 @@ public class QuestionService {
     public QuestionWriteResponse saveQuestionsFromTemplate(
             String eventId, String agreementId, String lotId, String eventType) {
         try {
-            // Fetch template data from agreement service
-            QuestionWrite templateData = agreementServiceClient.fetchTemplateData(agreementId, lotId, eventType);
+            // Fetch template data from agreement service using Feign client
+            List<DataTemplate> dataTemplates = 
+                agreementsClient.getEventDataTemplates(agreementId, lotId, eventType, agreementServiceApiKey);
             
             // If no template data exists, return null (no data changes should be made)
+            if (dataTemplates == null || dataTemplates.isEmpty()) {
+                return null;
+            }
+
+            // Map DataTemplate to QuestionWrite
+            QuestionWrite templateData = dataTemplateMapper.mapToQuestionWrite(dataTemplates, agreementId, lotId);
+            
+            // If mapping resulted in no criteria, return null
             if (templateData == null || templateData.getCriterion() == null || templateData.getCriterion().isEmpty()) {
                 return null;
             }
@@ -343,6 +361,12 @@ public class QuestionService {
 
             // Save the template data as questions
             return saveQuestionsFromPayload(templateData);
+        } catch (org.springframework.web.client.HttpClientErrorException.NotFound ex) {
+            // 404 means no template data exists - this is expected and not an error
+            return null;
+        } catch (feign.FeignException.NotFound ex) {
+            // 404 from Feign client means no template data exists - this is expected and not an error
+            return null;
         } catch (Exception ex) {
             rollbar.error(ex, "Error saving questions from template for eventId: " + eventId);
             throw ex;
@@ -398,31 +422,15 @@ public class QuestionService {
     /**
      * Returns list of question details based on eventId
      * @param eventId
-     * @return {@link List<Question>}
+     * @return {@link List<Questions>} - Returns all entity fields including id, eventId, agreementId, lotId, criteriaId, etc.
      *
      */
     // Not sure if we are caching yet
     //@Cacheable(value = "qAndACache", key = "#root.methodName")
-    public List<Question> getQuestionsWithEventId(final String eventId) {
+    public List<Questions> getQuestionsWithEventId(final String eventId) {
 
         return questionRepository
-                .findAllByEventIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(eventId)
-                .stream()
-                .map(this::mapQuestionEntityWithApiResponse)
-                .collect(Collectors.toList());
-    }
-
-    private Question mapQuestionEntityWithApiResponse(Questions q) {
-
-        return new Question(q.getQuestionId(),
-                q.getQuestionTitle(),
-                q.getQuestionDataType(),
-                BigDecimal.valueOf(q.getQuestionOrder()),
-                q.getQuestionAnswered(),
-                q.getQuestionMandatory(),
-                q.getQuestionMultiAnswer(),
-                q.getQuestionType(),
-                q.getIsLegacyQuestion());
+                .findAllByEventIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(eventId);
     }
 }
 

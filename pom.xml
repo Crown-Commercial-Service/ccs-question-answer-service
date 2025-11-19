@@ -54,6 +54,7 @@
         <hibernate.version>6.6.32.Final</hibernate.version>
         <jackson.databind.nullable.version>0.2.1</jackson.databind.nullable.version>
         <springdoc.openapi.ui.version>1.7.0</springdoc.openapi.ui.version>
+        <feignclient.version>4.3.0</feignclient.version>
     </properties>
 
     <dependencyManagement>
@@ -320,6 +321,17 @@
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
             <version>${swagger-annotations.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <version>${feignclient.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-io</artifactId>
+                    <groupId>commons-io</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
     <build>

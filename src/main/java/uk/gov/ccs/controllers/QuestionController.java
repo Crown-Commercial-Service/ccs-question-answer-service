@@ -36,7 +36,7 @@ public class QuestionController extends BaseController {
     private QuestionLogicClient questionLogicClient;
 
     @GetMapping("/{eventID}")
-    public ResponseEntity<List<Question>> getQuestions(@PathVariable("eventID") final String eventId) {
+    public ResponseEntity<List<Questions>> getQuestions(@PathVariable("eventID") final String eventId) {
 
         return ResponseEntity
                 .ok(questionService.getQuestionsWithEventId(eventId));

@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.ccs.config.SecurityConfig;
 import uk.gov.ccs.services.QuestionService;
 import uk.gov.ccs.BLL.QuestionLogicClient;
+import uk.gov.ccs.entity.Questions;
 import uk.gov.ccs.dts.qas.model.generated.Question;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
@@ -57,10 +58,10 @@ class QuestionControllerTest {
     @Test
     void getQuestions_shouldReturnListOfQuestions_whenDataIsFound() throws Exception {
         // Arrange
-        Question question1 = givenQuestion();
-        Question question2 = givenQuestion();
+        Questions question1 = givenQuestion();
+        Questions question2 = givenQuestion();
 
-        // Mock the service call to return our list of DTOs
+        // Mock the service call to return our list of entities
         when(questionService.getQuestionsWithEventId(eq(TEST_EVENT_ID)))
                 .thenReturn(List.of(question1, question2));
 
@@ -155,18 +156,32 @@ class QuestionControllerTest {
                 .getQuestionsWithEventId(eq(eventId));
     }
 
-    private Question givenQuestion() {
-        return new Question(
-                "12345",                           // questionId
-                "This is the first question",      // title
-                "Text",                            // dataType
-                BigDecimal.valueOf(1),             // order
-                true,                              // answered
-                true,                              // mandatory
-                false,                             // multiAnswer
-                "Lot1",                            // questionType
-                false                              // isLegacyQuestion
-        );
+    private Questions givenQuestion() {
+        Questions q = new Questions();
+        q.setId(1);
+        q.setEventId(TEST_EVENT_ID);
+        q.setAgreementId("RM1043.8");
+        q.setLotId("1");
+        q.setCriteriaId("criteria1");
+        q.setCriterionTitle("criterion tile");
+        q.setGroupId("This is test");
+        q.setGroupDescription("Test group description");
+        q.setGroupTask("group task");
+        q.setGroupOrder(1);
+        q.setGroupPrompt("Group promt");
+        q.setGroupMandatory(false);
+        q.setQuestionId("12345");
+        q.setQuestionTitle("What is your role");
+        q.setQuestionDescription("Details about your role. e.g. BA");
+        q.setQuestionDataType("text");
+        q.setQuestionOrder(1);
+        q.setQuestionAnswered(false);
+        q.setQuestionMandatory(false);
+        q.setQuestionDependency(null);
+        q.setQuestionMultiAnswer(false);
+        q.setQuestionType("Technical");
+        q.setIsLegacyQuestion(false);
+        return q;
     }
 
     // POST endpoint tests

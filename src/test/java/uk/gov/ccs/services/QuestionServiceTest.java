@@ -40,26 +40,28 @@ class QuestionServiceTest {
                 .thenReturn(mockEntities);
 
         // Act
-        List<Question> result = questionService.getQuestionsWithEventId(TEST_EVENT_ID);
+        List<Questions> result = questionService.getQuestionsWithEventId(TEST_EVENT_ID);
 
         verify(questionRepo, times(1))
                 .findAllByEventIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(TEST_EVENT_ID);
 
         assertEquals(2, result.size());
         // verify
-        Question dto1 = result.get(0);
-        verifyQuestion(entity1, dto1);
-        assertTrue(dto1.getAnswered());
-        assertTrue(dto1.getMandatory());
-        assertFalse(dto1.getMultiAnswer());
-        assertFalse(dto1.getIsLegacyQuestion());
+        Questions entity1Result = result.get(0);
+        assertEquals(entity1.getQuestionId(), entity1Result.getQuestionId());
+        assertEquals(entity1.getQuestionTitle(), entity1Result.getQuestionTitle());
+        assertTrue(entity1Result.getQuestionAnswered());
+        assertTrue(entity1Result.getQuestionMandatory());
+        assertFalse(entity1Result.getQuestionMultiAnswer());
+        assertFalse(entity1Result.getIsLegacyQuestion());
 
-        Question dto2 = result.get(1);
-        verifyQuestion(entity2, dto2);
-        assertFalse(dto2.getAnswered());
-        assertTrue(dto2.getMandatory());
-        assertTrue(dto2.getMultiAnswer());
-        assertTrue(dto2.getIsLegacyQuestion());
+        Questions entity2Result = result.get(1);
+        assertEquals(entity2.getQuestionId(), entity2Result.getQuestionId());
+        assertEquals(entity2.getQuestionTitle(), entity2Result.getQuestionTitle());
+        assertFalse(entity2Result.getQuestionAnswered());
+        assertTrue(entity2Result.getQuestionMandatory());
+        assertTrue(entity2Result.getQuestionMultiAnswer());
+        assertTrue(entity2Result.getIsLegacyQuestion());
     }
 
     @Test
@@ -89,19 +91,20 @@ class QuestionServiceTest {
                 .thenReturn(mockEntities);
 
         // Act
-        List<Question> result = questionService.getQuestionsWithEventId(TEST_EVENT_ID);
+        List<Questions> result = questionService.getQuestionsWithEventId(TEST_EVENT_ID);
 
         verify(questionRepo, times(1))
                 .findAllByEventIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(TEST_EVENT_ID);
 
         assertEquals(1, result.size());
 
-        verifyQuestion(singleEntity, result.get(0));
-        Question dto = result.get(0);
-        assertTrue(dto.getAnswered());
-        assertTrue(dto.getMandatory());
-        assertFalse(dto.getMultiAnswer());
-        assertFalse(dto.getIsLegacyQuestion());
+        Questions entityResult = result.get(0);
+        assertEquals(singleEntity.getQuestionId(), entityResult.getQuestionId());
+        assertEquals(singleEntity.getQuestionTitle(), entityResult.getQuestionTitle());
+        assertTrue(entityResult.getQuestionAnswered());
+        assertTrue(entityResult.getQuestionMandatory());
+        assertFalse(entityResult.getQuestionMultiAnswer());
+        assertFalse(entityResult.getIsLegacyQuestion());
 
     }
 
@@ -126,14 +129,6 @@ class QuestionServiceTest {
 
 
 
-    private void verifyQuestion(Questions singleEntity, Question dto) {
-        assertEquals(singleEntity.getQuestionId(), dto.getQuestionId());
-        assertEquals(singleEntity.getQuestionTitle(), dto.getTitle());
-        assertEquals(singleEntity.getQuestionDataType(), dto.getDataType());
-        assertEquals(BigDecimal.valueOf(singleEntity.getQuestionOrder()), dto.getOrder());
-        assertEquals(singleEntity.getQuestionDataType(), dto.getDataType());
-        assertEquals(singleEntity.getQuestionType(), dto.getQuestionType());
-    }
 
 
     private Questions givenQuestion1() {
