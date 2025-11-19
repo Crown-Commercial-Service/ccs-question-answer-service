@@ -51,7 +51,7 @@ class QuestionServiceTest {
         assertTrue(entity1Result.getQuestionAnswered());
         assertTrue(entity1Result.getQuestionMandatory());
         assertFalse(entity1Result.getQuestionMultiAnswer());
-        assertFalse(entity1Result.getIsLegacyQuestion());
+        assertFalse(entity1Result.getIsDefaultQuestion());
 
         Questions entity2Result = result.get(1);
         assertEquals(entity2.getQuestionId(), entity2Result.getQuestionId());
@@ -59,7 +59,7 @@ class QuestionServiceTest {
         assertFalse(entity2Result.getQuestionAnswered());
         assertTrue(entity2Result.getQuestionMandatory());
         assertTrue(entity2Result.getQuestionMultiAnswer());
-        assertTrue(entity2Result.getIsLegacyQuestion());
+        assertTrue(entity2Result.getIsDefaultQuestion());
     }
 
     @Test
@@ -102,7 +102,7 @@ class QuestionServiceTest {
         assertTrue(entityResult.getQuestionAnswered());
         assertTrue(entityResult.getQuestionMandatory());
         assertFalse(entityResult.getQuestionMultiAnswer());
-        assertFalse(entityResult.getIsLegacyQuestion());
+        assertFalse(entityResult.getIsDefaultQuestion());
 
     }
 
@@ -138,7 +138,7 @@ class QuestionServiceTest {
         q.setQuestionAnswered(true);
         q.setQuestionMandatory(true);
         q.setQuestionMultiAnswer(false);
-        q.setIsLegacyQuestion(false);
+        q.setIsDefaultQuestion(false);
         q.setQuestionType("Lot1");
         return q;
     }
@@ -152,7 +152,7 @@ class QuestionServiceTest {
         q.setQuestionAnswered(false);
         q.setQuestionMandatory(true);
         q.setQuestionMultiAnswer(true);
-        q.setIsLegacyQuestion(true);
+        q.setIsDefaultQuestion(true);
         q.setQuestionType("Lot2");
         return q;
     }

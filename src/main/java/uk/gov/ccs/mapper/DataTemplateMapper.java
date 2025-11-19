@@ -215,7 +215,7 @@ public class DataTemplateMapper {
             Question question = new Question();
             
             // Set isLegacyQuestion to true for template data
-            question.setIsLegacyQuestion(true);
+            question.setIsDefaultQuestion(true);
             
             // Map OCDS fields
             if (requirement.getOcds() != null) {

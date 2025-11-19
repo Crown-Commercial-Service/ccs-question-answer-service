@@ -207,8 +207,8 @@ public class QuestionService {
                     if (question.getQuestionType() == null || question.getQuestionType().trim().isEmpty()) {
                         throw new IllegalArgumentException("Question questionType is required and cannot be null or empty");
                     }
-                    if (question.getIsLegacyQuestion() == null) {
-                        throw new IllegalArgumentException("Question isLegacyQuestion is required and cannot be null");
+                    if (question.getIsDefaultQuestion() == null) {
+                        throw new IllegalArgumentException("Question isDefaultQuestion is required and cannot be null");
                     }
                 }
             }
@@ -226,8 +226,6 @@ public class QuestionService {
         
         // Update all fields except ID and createdAt
         existing.setEventId(eventId);
-        existing.setAgreementId(agreementId);
-        existing.setLotId(lotId);
         existing.setCriteriaId(criterion.getCriteriaId());
         existing.setCriterionTitle(criterion.getTitle());
         existing.setGroupId(group.getGroupId());
@@ -245,7 +243,7 @@ public class QuestionService {
         existing.setQuestionMandatory(question.getMandatory());
         existing.setQuestionMultiAnswer(question.getMultiAnswer());
         existing.setQuestionType(question.getQuestionType());
-        existing.setIsLegacyQuestion(question.getIsLegacyQuestion() != null ? question.getIsLegacyQuestion() : false);
+        existing.setIsDefaultQuestion(question.getIsDefaultQuestion() != null ? question.getIsDefaultQuestion() : false);
         existing.setUpdatedAt(now);
 
         // Handle dependency JSONB field
@@ -267,8 +265,6 @@ public class QuestionService {
      */
     private boolean hasDataChanged(Questions existing, Questions updated) {
         return !java.util.Objects.equals(existing.getEventId(), updated.getEventId()) ||
-               !java.util.Objects.equals(existing.getAgreementId(), updated.getAgreementId()) ||
-               !java.util.Objects.equals(existing.getLotId(), updated.getLotId()) ||
                !java.util.Objects.equals(existing.getCriteriaId(), updated.getCriteriaId()) ||
                !java.util.Objects.equals(existing.getCriterionTitle(), updated.getCriterionTitle()) ||
                !java.util.Objects.equals(existing.getGroupId(), updated.getGroupId()) ||
@@ -287,7 +283,7 @@ public class QuestionService {
                !java.util.Objects.equals(existing.getQuestionDependency(), updated.getQuestionDependency()) ||
                !java.util.Objects.equals(existing.getQuestionMultiAnswer(), updated.getQuestionMultiAnswer()) ||
                !java.util.Objects.equals(existing.getQuestionType(), updated.getQuestionType()) ||
-               !java.util.Objects.equals(existing.getIsLegacyQuestion(), updated.getIsLegacyQuestion());
+               !java.util.Objects.equals(existing.getIsDefaultQuestion(), updated.getIsDefaultQuestion());
     }
 
     /**
@@ -355,8 +351,6 @@ public class QuestionService {
         
         Questions entity = Questions.builder()
             .eventId(eventId)
-            .agreementId(agreementId)
-            .lotId(lotId)
             .criteriaId(criterion.getCriteriaId())
             .criterionTitle(criterion.getTitle())
             .groupId(group.getGroupId())
@@ -374,7 +368,7 @@ public class QuestionService {
             .questionMandatory(question.getMandatory())
             .questionMultiAnswer(question.getMultiAnswer())
             .questionType(question.getQuestionType())
-            .isLegacyQuestion(question.getIsLegacyQuestion() != null ? question.getIsLegacyQuestion() : false)
+            .isDefaultQuestion(question.getIsDefaultQuestion() != null ? question.getIsDefaultQuestion() : false)
             .createdAt(now)
             .updatedAt(now)
             .build();
@@ -400,9 +394,13 @@ public class QuestionService {
 
     @Cacheable(value = "qAndACache", key = "#root.methodName + '-' + #eventId")
     public List<Questions> getQuestionsWithEventId(final String eventId) {
-
-        return questionRepository
-                .findAllByEventIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(eventId);
+        try {
+            return questionRepository
+                    .findAllByEventIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(eventId);
+        } catch (Exception ex) {
+            rollbar.error(ex, "Error to fetch questions for the eventId: " + eventId);
+            throw ex;
+        }
     }
 }
 

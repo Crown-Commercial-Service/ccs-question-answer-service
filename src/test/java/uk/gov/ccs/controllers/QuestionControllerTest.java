@@ -153,8 +153,6 @@ class QuestionControllerTest {
         Questions q = new Questions();
         q.setId(1);
         q.setEventId(TEST_EVENT_ID);
-        q.setAgreementId("RM1043.8");
-        q.setLotId("1");
         q.setCriteriaId("criteria1");
         q.setCriterionTitle("criterion tile");
         q.setGroupId("This is test");
@@ -173,7 +171,7 @@ class QuestionControllerTest {
         q.setQuestionDependency(null);
         q.setQuestionMultiAnswer(false);
         q.setQuestionType("Technical");
-        q.setIsLegacyQuestion(false);
+        q.setIsDefaultQuestion(false);
         return q;
     }
 

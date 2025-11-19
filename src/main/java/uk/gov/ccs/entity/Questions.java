@@ -25,12 +25,6 @@ public class Questions {
     @Column(name = "event_id")
     String eventId;
 
-    @Column(name = "agreement_id")
-    String agreementId;
-
-    @Column(name = "lot_id")
-    String lotId;
-
     @Column(name = "criteria_id")
     String criteriaId;
 
@@ -86,12 +80,12 @@ public class Questions {
     @Column(name = "question_type")
     String questionType;
 
-    @Column(name = "is_legacy_question")
-    Boolean isLegacyQuestion;
-
     @Column(name = "created_at")
     Timestamp createdAt;
 
     @Column(name = "updated_at")
     Timestamp updatedAt;
+
+    @Column(name = "is_default_question")
+    Boolean isDefaultQuestion;
 }
