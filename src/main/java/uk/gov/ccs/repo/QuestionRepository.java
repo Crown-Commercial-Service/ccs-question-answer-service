@@ -11,18 +11,12 @@ import java.util.List;
  */
 @Repository
 public interface QuestionRepository extends JpaRepository<Questions, Long> {
-    
+
     /**
      * Find all questions for a specific event ID
      */
     List<Questions> findByEventId(String eventId);
-    
-    /**
-     * Find a question by event ID and question ID
-     */
-    Questions findByEventIdAndQuestionId(String eventId, String questionId);
 
-    List<Questions> findAllByEventId(String eventId);
 
     /**
      * Finds all Question entities associated with a specific event ID, ordered by

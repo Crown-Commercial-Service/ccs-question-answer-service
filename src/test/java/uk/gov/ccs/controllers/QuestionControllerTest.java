@@ -1,6 +1,7 @@
 package uk.gov.ccs.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rollbar.notifier.Rollbar;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -8,16 +9,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.ccs.config.SecurityConfig;
-import uk.gov.ccs.services.QuestionService;
 import uk.gov.ccs.BLL.QuestionLogicClient;
-import uk.gov.ccs.entity.Questions;
-import uk.gov.ccs.dts.qas.model.generated.Question;
+import uk.gov.ccs.config.SecurityConfig;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
-import com.rollbar.notifier.Rollbar;
+import uk.gov.ccs.entity.Questions;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,12 +22,11 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 
 @WebMvcTest(QuestionController.class)
 @Import(SecurityConfig.class)
@@ -50,9 +46,6 @@ class QuestionControllerTest {
     private Rollbar rollbar;
 
     @MockBean
-    private QuestionService questionService;
-
-    @MockBean
     private QuestionLogicClient questionLogicClient;
 
     @Test
@@ -62,7 +55,7 @@ class QuestionControllerTest {
         Questions question2 = givenQuestion();
 
         // Mock the service call to return our list of entities
-        when(questionService.getQuestionsWithEventId(eq(TEST_EVENT_ID)))
+        when(questionLogicClient.getQuestionsWithEventId(eq(TEST_EVENT_ID)))
                 .thenReturn(List.of(question1, question2));
 
         // Act & Assert
@@ -80,7 +73,7 @@ class QuestionControllerTest {
         final String emptyEventId = "EVENT_NO_QUESTIONS";
 
         // Mock the service call to return an empty list
-        when(questionService.getQuestionsWithEventId(eq(emptyEventId)))
+        when(questionLogicClient.getQuestionsWithEventId(eq(emptyEventId)))
                 .thenReturn(Collections.emptyList());
 
         // Act & Assert
@@ -98,7 +91,7 @@ class QuestionControllerTest {
         final String expectedEventId = "ABC-123";
 
         // Mock the service to return anything (we only care about the invocation here)
-        when(questionService.getQuestionsWithEventId(eq(expectedEventId)))
+        when(questionLogicClient.getQuestionsWithEventId(eq(expectedEventId)))
                 .thenReturn(Collections.emptyList());
 
         // Act
@@ -108,7 +101,7 @@ class QuestionControllerTest {
                 .andExpect(status().isOk());
 
         // Assert
-        verify(questionService, times(1))
+        verify(questionLogicClient, times(1))
                 .getQuestionsWithEventId(eq(expectedEventId));
     }
 
@@ -118,7 +111,7 @@ class QuestionControllerTest {
         final String eventId = "EVENT_UNAUTH";
         
         // Mock the service call to return an empty list
-        when(questionService.getQuestionsWithEventId(eq(eventId)))
+        when(questionLogicClient.getQuestionsWithEventId(eq(eventId)))
                 .thenReturn(Collections.emptyList());
 
         // Act & Assert
@@ -130,7 +123,7 @@ class QuestionControllerTest {
                 .andExpect(content().json("[]"));
 
         // Assert that the service was called (Security allows the request)
-        verify(questionService, times(1))
+        verify(questionLogicClient, times(1))
                 .getQuestionsWithEventId(eq(eventId));
     }
 
@@ -140,7 +133,7 @@ class QuestionControllerTest {
         final String eventId = "EVENT_AUTH";
 
         // Mock the service call to return an empty list
-        when(questionService.getQuestionsWithEventId(eq(eventId)))
+        when(questionLogicClient.getQuestionsWithEventId(eq(eventId)))
                 .thenReturn(Collections.emptyList());
 
         // Act & Assert
@@ -152,7 +145,7 @@ class QuestionControllerTest {
                 .andExpect(content().json("[]"));
 
         // Assert
-        verify(questionService, times(1))
+        verify(questionLogicClient, times(1))
                 .getQuestionsWithEventId(eq(eventId));
     }
 

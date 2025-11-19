@@ -1,26 +1,17 @@
 package uk.gov.ccs.controllers;
 
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import uk.gov.ccs.BLL.QuestionLogicClient;
-import uk.gov.ccs.entity.Questions;
-import uk.gov.ccs.services.QuestionService;
-import uk.gov.ccs.dts.qas.model.generated.Question;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
+import uk.gov.ccs.entity.Questions;
+import uk.gov.ccs.exceptions.ResourceNotFoundException;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * QuestionController to handle question related CRUD operations.
@@ -30,33 +21,22 @@ import java.util.Optional;
 public class QuestionController extends BaseController {
 
     @Autowired
-    private QuestionService questionService;
-
-    @Autowired
     private QuestionLogicClient questionLogicClient;
 
+    /**
+     * Retrieve questions for an eventId grouped into criteria and question group.
+     * @param eventId
+     * @return {@link List<Questions>}
+     */
     @GetMapping("/{eventID}")
     public ResponseEntity<List<Questions>> getQuestions(@PathVariable("eventID") final String eventId) {
 
-        return ResponseEntity
-                .ok(questionService.getQuestionsWithEventId(eventId));
-    }
-
-
-    /**
-     * GET endpoint to retrieve all questions
-     * 
-     * Usage: GET http://localhost:4000/questions
-     */
-    @GetMapping
-    public ResponseEntity<List<Questions>> getAllQuestions() {
-        log.info("GET /questions - Retrieving all questions");
+        log.debug("GET /questions - Retrieving questions with eventId={}", eventId);
         try {
-            List<Questions> questions = questionService.getAllQuestions();
-            return ResponseEntity.ok(questions);
+            return ResponseEntity
+                    .ok(questionLogicClient.getQuestionsWithEventId(eventId));
         } catch (Exception ex) {
-            log.error("Error retrieving questions", ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            throw new ResourceNotFoundException("No question details found for this eventId " + eventId);
         }
     }
 
@@ -80,7 +60,7 @@ public class QuestionController extends BaseController {
             @RequestBody(required = false) QuestionWrite questionWrite,
             @RequestParam(required = false) String eventType) {
         
-        log.info("POST /questions - Request received. questionWrite: {}, eventType: {}", 
+        log.debug("POST /questions - Request received. questionWrite: {}, eventType: {}",
                 questionWrite != null ? "present" : "null", eventType);
         
         // Check if request body is present
@@ -89,7 +69,7 @@ public class QuestionController extends BaseController {
             return ResponseEntity.badRequest().build();
         }
         
-        log.info("POST /questions - Creating questions for eventId: {}, agreementId: {}, lotId: {}, eventType: {}",
+        log.debug("POST /questions - Creating questions for eventId: {}, agreementId: {}, lotId: {}, eventType: {}",
                 questionWrite.getEventId(), questionWrite.getAgreementId(), questionWrite.getLotId(), eventType);
 
         try {
@@ -112,12 +92,12 @@ public class QuestionController extends BaseController {
 
             // If response is null, it means no template data exists and no changes were made
             if (response == null) {
-                log.info("POST /questions - No template data found for agreement: {}, lot: {}, eventType: {}. No changes made.",
+                log.debug("POST /questions - No template data found for agreement: {}, lot: {}, eventType: {}. No changes made.",
                         questionWrite.getAgreementId(), questionWrite.getLotId(), eventType);
                 return ResponseEntity.noContent().build();
             }
 
-            log.info("POST /questions - Successfully created/updated questions for eventId: {}", questionWrite.getEventId());
+            log.debug("POST /questions - Successfully created/updated questions for eventId: {}", questionWrite.getEventId());
             return ResponseEntity.ok(response);
 
         } catch (IllegalArgumentException ex) {

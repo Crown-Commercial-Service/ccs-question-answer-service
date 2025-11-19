@@ -6,6 +6,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
+import uk.gov.ccs.entity.Questions;
 import uk.gov.ccs.services.QuestionService;
 
 import java.util.List;
@@ -74,6 +75,10 @@ public class QuestionLogicClient {
             rollbar.error(ex, "Error creating/updating questions for eventId: " + questionWrite.getEventId());
             throw ex;
         }
+    }
+
+    public List<Questions> getQuestionsWithEventId(final String eventId) {
+        return questionService.getQuestionsWithEventId(eventId);
     }
 }
 

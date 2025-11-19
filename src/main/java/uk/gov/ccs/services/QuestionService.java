@@ -4,31 +4,27 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rollbar.notifier.Rollbar;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.ccs.entity.Questions;
-import uk.gov.ccs.repo.QuestionRepository;
 import uk.gov.ccs.clients.AgreementsClient;
+import uk.gov.ccs.dts.qas.model.generated.*;
+import uk.gov.ccs.entity.Questions;
 import uk.gov.ccs.mapper.DataTemplateMapper;
-import uk.gov.ccs.dts.qas.model.generated.Criterion;
-import uk.gov.ccs.dts.qas.model.generated.Question;
-import uk.gov.ccs.dts.qas.model.generated.QuestionGroup;
-import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
-import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
 import uk.gov.ccs.model.agreements.DataTemplate;
+import uk.gov.ccs.repo.QuestionRepository;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Service to handle question-related business logic
  */
 @Service
 public class QuestionService {
+
     @Autowired
     private QuestionRepository questionRepository;
 
@@ -41,34 +37,10 @@ public class QuestionService {
     @Autowired
     private DataTemplateMapper dataTemplateMapper;
     
-    @org.springframework.beans.factory.annotation.Value("${external-services.agreements-service.api-key:}")
+    @Value("${external-services.agreements-service.api-key:}")
     private String agreementServiceApiKey;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-
-    /**
-     * Get all questions
-     */
-    public List<Questions> getAllQuestions() {
-        try {
-            return questionRepository.findAll();
-        } catch (Exception ex) {
-            rollbar.error(ex, "Error fetching all questions");
-            throw ex;
-        }
-    }
-
-    /**
-     * Get a question by ID
-     */
-    public Optional<Questions> getQuestionById(Long id) {
-        try {
-            return questionRepository.findById(id);
-        } catch (Exception ex) {
-            rollbar.error(ex, "Error fetching question with ID: " + id);
-            throw ex;
-        }
-    }
 
     /**
      * Save questions from the provided payload directly to the database.
@@ -420,13 +392,13 @@ public class QuestionService {
     }
     
     /**
-     * Returns list of question details based on eventId
+     * Retrieve questions for an eventId grouped into criteria and question group.
      * @param eventId
-     * @return {@link List<Questions>} - Returns all entity fields including id, eventId, agreementId, lotId, criteriaId, etc.
+     * @return {@link List<Questions>}
      *
      */
-    // Not sure if we are caching yet
-    //@Cacheable(value = "qAndACache", key = "#root.methodName")
+
+    @Cacheable(value = "qAndACache", key = "#root.methodName")
     public List<Questions> getQuestionsWithEventId(final String eventId) {
 
         return questionRepository

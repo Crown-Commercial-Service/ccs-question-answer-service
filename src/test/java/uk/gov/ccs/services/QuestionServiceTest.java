@@ -5,11 +5,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.ccs.dts.qas.model.generated.Question;
 import uk.gov.ccs.entity.Questions;
 import uk.gov.ccs.repo.QuestionRepository;
 
-import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
