@@ -23,7 +23,7 @@ public class GlobalErrorHandler extends BaseController {
     /**
      * Error handler for 404 Not Found requests
      */
-    @ExceptionHandler({NoHandlerFoundException.class, NoResourceFoundException.class})
+    @ExceptionHandler({NoHandlerFoundException.class, NoResourceFoundException.class, ResourceNotFoundException.class})
     public String handleRouteNotFound(HttpServletRequest request, HttpServletResponse response)   {
         // This is a 404 Route Not Found error
         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
