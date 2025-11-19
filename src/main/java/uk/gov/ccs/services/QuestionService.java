@@ -398,7 +398,7 @@ public class QuestionService {
      *
      */
 
-    @Cacheable(value = "qAndACache", key = "#root.methodName")
+    @Cacheable(value = "qAndACache", key = "#root.methodName + '-' + #eventId")
     public List<Questions> getQuestionsWithEventId(final String eventId) {
 
         return questionRepository
