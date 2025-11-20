@@ -3,6 +3,7 @@ package uk.gov.ccs.BLL;
 import com.rollbar.notifier.Rollbar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
@@ -77,8 +78,26 @@ public class QuestionLogicClient {
         }
     }
 
+    /**
+     * Retrieve list of questions for an eventId grouped into criteria and question group.
+     * @param eventId to retrieve questions for that eventId
+     * @return list of questions {@link List<Questions>}
+     */
+    @Cacheable(value = "qAndACache", key = "#root.methodName + '-' + #eventId")
     public List<Questions> getQuestionsWithEventId(final String eventId) {
         return questionService.getQuestionsWithEventId(eventId);
+    }
+
+    /**
+     * Delete question/questions match with the eventId and questionId.
+     * @param eventId to match
+     * @param questionId to match
+     * @return 1 is delete successful or 0 if delete fail for non matching eventId
+     * or questionId {@link Long}
+     */
+    @CacheEvict(value = "qAndACache", key = "'getQuestionsWithEventId-' + #eventId")
+    public long deleteQuestion(String eventId, String questionId) {
+        return questionService.deleteQuestion(eventId, questionId);
     }
 }
 

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.ccs.BLL.QuestionLogicClient;
@@ -23,10 +24,10 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.ccs.constants.Constants.responses_Success;
 
 @WebMvcTest(QuestionController.class)
 @Import(SecurityConfig.class)
@@ -35,6 +36,7 @@ class QuestionControllerTest {
 
     private static final String BASE_URL = "/questions";
     private static final String TEST_EVENT_ID = "TEST_12344_OCD";
+    private static final String TEST_QUESTION_ID = "question 2";
 
     @Autowired
     private MockMvc mockMvc;
@@ -413,6 +415,54 @@ class QuestionControllerTest {
 
         verify(questionLogicClient, times(1))
                 .createOrUpdateQuestions(eq(questionWrite), isNull());
+    }
+
+    @Test
+    void deleteQuestionShouldReturn200OKAndSuccessBodyWhenQuestionIsDeleted() throws Exception {
+        // Arrange
+        when(questionLogicClient.deleteQuestion(eq(TEST_EVENT_ID), eq(TEST_QUESTION_ID))).thenReturn(1L);
+
+        // Act & Assert
+        mockMvc.perform(delete(BASE_URL + "/{eventId}/{questionId}", TEST_EVENT_ID, TEST_QUESTION_ID)
+                        .with(user("authorizedUser").roles("ADMIN"))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string(responses_Success));
+
+        // Verify the logic client was called
+        org.mockito.Mockito.verify(questionLogicClient, times(1))
+                .deleteQuestion(eq(TEST_EVENT_ID), eq(TEST_QUESTION_ID));
+
+        // Verify Rollbar was NOT called on success
+        org.mockito.Mockito.verify(rollbar, times(0)).error(anyString());
+    }
+
+    @Test
+    void deleteQuestionShouldReturn404NotFoundAndLogRollbarErrorWhenQuestionNotFound() throws Exception {
+        // Arrange
+        final String nonExistentQuestionId = "QID-MISSING";
+
+        // Mock the logic client to return 0 (no entities deleted)
+        when(questionLogicClient.deleteQuestion(eq(TEST_EVENT_ID), eq(nonExistentQuestionId))).thenReturn(0L);
+
+        // Expected error message pattern for Rollbar assertion
+        final String expectedLogMessage = "DELETE /question failed due to eventId and question do not match."
+                + "eventId=" + TEST_EVENT_ID + " questionId= " + nonExistentQuestionId;
+
+        // Act & Assert
+        mockMvc.perform(delete(BASE_URL + "/{eventId}/{questionId}", TEST_EVENT_ID, nonExistentQuestionId)
+                        .with(user("authorizedUser").roles("ADMIN"))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound()) // Assert 404 Not Found
+                .andExpect(content().string("")); // Assert empty body for 404
+
+        // Verify the logic client was called
+        verify(questionLogicClient, times(1))
+                .deleteQuestion(eq(TEST_EVENT_ID), eq(nonExistentQuestionId));
+
+        // Verify Rollbar was called with the correct message
+        verify(rollbar, times(1))
+                .error(argThat((String message) -> message.contains(expectedLogMessage)));
     }
 
     // Helper methods for POST tests
