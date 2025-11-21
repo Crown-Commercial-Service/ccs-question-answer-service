@@ -2,3 +2,31 @@
 rollbar:
   accessToken: 11111111
   env: test
+
+# Cache configuration for tests
+caching:
+  primary:
+    cacheLength: 3600
+    heapSize: 500
+
+# External services configuration for tests
+external-services:
+  agreements-service:
+    base-path: http://localhost:8080
+    api-key: test-api-key
+    data-templates-path: /agreements/{agreementId}/lots/{lotId}/event-types/{eventType}/data-templates
+
+# Test database configuration - use in-memory HSQLDB
+spring:
+  datasource:
+    url: jdbc:hsqldb:mem:testdb
+    driver-class-name: org.hsqldb.jdbcDriver
+    username: sa
+    password: 
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.HSQLDialect
