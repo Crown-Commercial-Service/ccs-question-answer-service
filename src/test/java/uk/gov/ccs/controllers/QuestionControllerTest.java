@@ -3,12 +3,14 @@ package uk.gov.ccs.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rollbar.notifier.Rollbar;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.ccs.BLL.QuestionLogicClient;
 import uk.gov.ccs.config.SecurityConfig;
@@ -32,6 +34,7 @@ import static uk.gov.ccs.constants.Constants.responses_Success;
 @WebMvcTest(QuestionController.class)
 @Import(SecurityConfig.class)
 @ActiveProfiles("test")
+@TestPropertySource(properties = "config.security.api-key=abdc1234")
 class QuestionControllerTest {
 
     private static final String BASE_URL = "/questions";
@@ -40,6 +43,9 @@ class QuestionControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Value("${config.security.api-key}")
+    private String apiKey;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -108,7 +114,30 @@ class QuestionControllerTest {
     }
 
     @Test
-    void getQuestions_shouldAllowUnauthenticatedRequests() throws Exception {
+    void getQuestions_shouldAllowAuthenticatedRequests() throws Exception {
+        // Arrange
+        final String eventId = "EVENT_UNAUTH";
+        
+        // Mock the service call to return an empty list
+        when(questionLogicClient.getQuestionsWithEventId(eq(eventId)))
+                .thenReturn(Collections.emptyList());
+
+        // Act & Assert
+        // Perform request WITHOUT the .with(user("...")) security post-processor
+        // SecurityConfig permits all requests, so unauthenticated requests should work
+        mockMvc.perform(get(BASE_URL + "/{eventID}", eventId)
+                        .header("x-api-key", apiKey)
+                        .accept(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[]"));
+
+        // Assert that the service was called (Security allows the request)
+        verify(questionLogicClient, times(1))
+                .getQuestionsWithEventId(eq(eventId));
+    }
+
+    @Test
+    void getQuestions_shouldNotAllowUnauthenticatedRequests() throws Exception {
         // Arrange
         final String eventId = "EVENT_UNAUTH";
         
@@ -121,12 +150,7 @@ class QuestionControllerTest {
         // SecurityConfig permits all requests, so unauthenticated requests should work
         mockMvc.perform(get(BASE_URL + "/{eventID}", eventId)
                         .accept(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().json("[]"));
-
-        // Assert that the service was called (Security allows the request)
-        verify(questionLogicClient, times(1))
-                .getQuestionsWithEventId(eq(eventId));
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -397,7 +421,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void createQuestions_shouldAllowUnauthenticatedRequests() throws Exception {
+    void createQuestions_shouldAllowAuthenticatedRequests() throws Exception {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
         QuestionWriteResponse response = givenQuestionWriteResponse();
@@ -406,8 +430,8 @@ class QuestionControllerTest {
                 .thenReturn(response);
 
         // Act & Assert
-        // SecurityConfig permits all requests, so unauthenticated requests should work
         mockMvc.perform(post(BASE_URL)
+                        .header("x-api-key", apiKey)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(questionWrite)))
                 .andExpect(status().isCreated())
@@ -415,6 +439,22 @@ class QuestionControllerTest {
 
         verify(questionLogicClient, times(1))
                 .createOrUpdateQuestions(eq(questionWrite), isNull());
+    }
+
+    @Test
+    void createQuestions_shouldNotAllowUnauthenticatedRequests() throws Exception {
+        // Arrange
+        QuestionWrite questionWrite = givenQuestionWrite();
+        QuestionWriteResponse response = givenQuestionWriteResponse();
+        
+        when(questionLogicClient.createOrUpdateQuestions(eq(questionWrite), isNull()))
+                .thenReturn(response);
+
+        // Act & Assert
+        mockMvc.perform(post(BASE_URL)
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionWrite)))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

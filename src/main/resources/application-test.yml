@@ -1,7 +1,7 @@
 # Security and Cache config for tests
 config:
   security:
-    api-key: abcde123456fghijklm789opqrst
+    api-key: abdc1234
   caching:
     primary:
       cacheLength: 3600
