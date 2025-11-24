@@ -446,7 +446,7 @@ class QuestionControllerTest {
         when(questionLogicClient.deleteQuestion(eq(TEST_EVENT_ID), eq(nonExistentQuestionId))).thenReturn(0L);
 
         // Expected error message pattern for Rollbar assertion
-        final String expectedLogMessage = "DELETE /question failed due to eventId and question do not match."
+        final String expectedLogMessage = "DELETE /questions failed, no match found for the eventId and questionId."
                 + "eventId=" + TEST_EVENT_ID + " questionId= " + nonExistentQuestionId;
 
         // Act & Assert
