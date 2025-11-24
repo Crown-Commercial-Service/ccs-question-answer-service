@@ -53,7 +53,7 @@
         <springdoc.version>2.3.0</springdoc.version>
         <hibernate.version>6.6.32.Final</hibernate.version>
         <jackson.databind.nullable.version>0.2.8</jackson.databind.nullable.version>
-        <springdoc.openapi.ui.version>1.7.0</springdoc.openapi.ui.version>
+        <springdoc.openapi.ui.version>1.8.0</springdoc.openapi.ui.version>
         <feignclient.version>4.3.0</feignclient.version>
     </properties>
 
