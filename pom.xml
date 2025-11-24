@@ -44,7 +44,7 @@
         <json.version>20250517</json.version>
         <openapi-generator.version>7.8.0</openapi-generator.version>
         <hibernate-types.version>2.21.1</hibernate-types.version>
-        <modelmapper.version>3.2.5</modelmapper.version>
+        <modelmapper.version>3.2.6</modelmapper.version>
         <swagger-parser.version>2.1.35</swagger-parser.version>
         <hsql.version>2.7.4</hsql.version>
         <postgres.version>42.7.8</postgres.version>
