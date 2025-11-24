@@ -1,22 +1,25 @@
-# Rollbar configuration items
+# Security and Cache config for tests
+config:
+  security:
+    api-key: abcde123456fghijklm789opqrst
+  caching:
+    primary:
+      cacheLength: 3600
+      heapSize: 500
+
+# Rollbar for tests
 rollbar:
   accessToken: 11111111
   env: test
 
-# Cache configuration for tests
-caching:
-  primary:
-    cacheLength: 3600
-    heapSize: 500
-
-# External services configuration for tests
+# External Services for tests
 external-services:
   agreements-service:
     base-path: http://localhost:8080
     api-key: test-api-key
     data-templates-path: /agreements/{agreementId}/lots/{lotId}/event-types/{eventType}/data-templates
 
-# Test database configuration - use in-memory HSQLDB
+# Test Database spring config for tests - use in-memory HSQLDB
 spring:
   datasource:
     url: jdbc:hsqldb:mem:testdb
