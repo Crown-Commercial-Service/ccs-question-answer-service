@@ -136,7 +136,7 @@ public class QuestionController extends BaseController {
 
         long count = questionLogicClient.deleteQuestion(eventId, questionId);
         if (count == 0) {
-            rollbar.error("DELETE /question failed due to eventId and question do not match."
+            rollbar.error("DELETE /questions failed, no match found for the eventId and questionId."
                     + "eventId=" + eventId + " questionId= " + questionId);
             return ResponseEntity.notFound().build();
         }
