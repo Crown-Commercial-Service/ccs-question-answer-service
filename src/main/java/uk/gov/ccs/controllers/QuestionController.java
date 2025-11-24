@@ -15,6 +15,8 @@ import uk.gov.ccs.exceptions.ResourceNotFoundException;
 import java.net.URI;
 import java.util.List;
 
+import static uk.gov.ccs.constants.Constants.responses_Success;
+
 /**
  * QuestionController to handle question related CRUD operations.
  */
@@ -27,8 +29,8 @@ public class QuestionController extends BaseController {
 
     /**
      * Retrieve questions for an eventId grouped into criteria and question group.
-     * @param eventId
-     * @return {@link List<Questions>}
+     * @param eventId The ID of the event the question belongs to.
+     * @return {@link List<Questions>}, standard HTTP response entity (200).
      */
     @GetMapping("/{eventID}")
     public ResponseEntity<List<Questions>> getQuestions(@PathVariable("eventID") final String eventId) {
@@ -117,5 +119,31 @@ public class QuestionController extends BaseController {
             log.error("POST /questions - Error creating questions", ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    /**
+     * Handles DELETE requests to remove a specific question resource for a given event.
+     * Returns HTTP 200.
+     *
+     * @param eventId The ID of the event the question belongs to.
+     * @param questionId The unique ID of the question to delete.
+     * @return A standard HTTP response entity (200).
+     */
+    @DeleteMapping("/{eventId}/{questionId}")
+    public ResponseEntity<String> deleteQuestion(
+            @PathVariable String eventId,
+            @PathVariable String questionId) {
+
+        long count = questionLogicClient.deleteQuestion(eventId, questionId);
+        if (count == 0) {
+            rollbar.error("DELETE /questions failed, no match found for the eventId and questionId."
+                    + "eventId=" + eventId + " questionId= " + questionId);
+            return ResponseEntity.notFound().build();
+        }
+
+        log.debug("DELETE /questions - Successfully deleted the question eventId: {}, " +
+                "questionId: {}", eventId, questionId);
+
+        return ResponseEntity.ok(responses_Success);
     }
 }

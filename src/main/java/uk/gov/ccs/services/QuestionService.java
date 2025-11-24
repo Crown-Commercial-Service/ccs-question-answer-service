@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rollbar.notifier.Rollbar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ccs.clients.AgreementsClient;
@@ -386,19 +385,34 @@ public class QuestionService {
     }
     
     /**
-     * Retrieve questions for an eventId grouped into criteria and question group.
-     * @param eventId
+     * Retrieve list of questions for an eventId grouped into criteria and question group.
+     * @param eventId to retrieve questions for that eventId
      * @return {@link List<Questions>}
      *
      */
-
-    @Cacheable(value = "qAndACache", key = "#root.methodName + '-' + #eventId")
     public List<Questions> getQuestionsWithEventId(final String eventId) {
         try {
             return questionRepository
                     .findAllByEventIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(eventId);
         } catch (Exception ex) {
             rollbar.error(ex, "Error to fetch questions for the eventId: " + eventId);
+            throw ex;
+        }
+    }
+
+    /**
+     * Delete question/questions match with the eventId and questionId.
+     * @param eventId to match
+     * @param questionId to match
+     * @return 1 is delete successful or 0 if delete fail for non matching eventId
+     * or questionId {@link Long}
+     */
+    public long deleteQuestion(String eventId, String questionId) {
+        try {
+            return questionRepository.deleteByEventIdAndQuestionId(eventId, questionId);
+        } catch (Exception ex) {
+            rollbar.error(ex, "Error occured while deleting question, eventId: "
+                    + eventId + " questionId: " + questionId);
             throw ex;
         }
     }

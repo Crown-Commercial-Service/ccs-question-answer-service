@@ -1,7 +1,9 @@
 package uk.gov.ccs.repo;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ccs.entity.Questions;
 
 import java.util.List;
@@ -29,4 +31,19 @@ public interface QuestionRepository extends JpaRepository<Questions, Long> {
      * @return An ordered list of all questions for the given event.
      */
     List<Questions> findAllByEventIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(String eventId);
+
+    /**
+     * Deletes a question based on its unique questionId and the eventId.
+     *
+     * IMPORTANT: This method uses a derived query for direct deletion.
+     * - @Modifying is required because it's a data-modifying operation.
+     * - @Transactional is required because the EntityManager must commit the transaction.
+     *
+     * @param eventId The ID of the event.
+     * @param questionId The ID of the question to delete.
+     * @return The number of entities deleted (0 or 1).
+     */
+    @Modifying
+    @Transactional
+    long deleteByEventIdAndQuestionId(String eventId, String questionId);
 }
