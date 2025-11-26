@@ -18,10 +18,10 @@ import java.time.Duration;
  */
 @Configuration
 public class CacheConfig {
-    @Value("${caching.primary.cacheLength}")
+    @Value("${config.caching.primary.cacheLength}")
     String primaryCacheLength;
 
-    @Value("${caching.primary.heapSize}")
+    @Value("${config.caching.primary.heapSize}")
     String primaryCacheSize;
 
     /**
