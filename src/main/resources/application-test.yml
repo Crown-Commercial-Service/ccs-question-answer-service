@@ -2,10 +2,6 @@
 config:
   security:
     api-key: abdc1234
-  caching:
-    primary:
-      cacheLength: 3600
-      heapSize: 500
 
 # Rollbar for tests
 rollbar:
