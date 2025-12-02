@@ -3,26 +3,26 @@ package uk.gov.ccs.services;
 import com.rollbar.notifier.Rollbar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.ccs.entity.Questions;
-import uk.gov.ccs.mapper.QuestionsToDataTemplateMapper;
+import uk.gov.ccs.entity.DefaultQuestions;
+import uk.gov.ccs.mapper.DefaultQuestionsToDataTemplateMapper;
 import uk.gov.ccs.model.agreements.DataTemplate;
-import uk.gov.ccs.repo.QuestionRepository;
+import uk.gov.ccs.repo.DefaultQuestionsRepository;
 
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Service to retrieve template data from questions table
+ * Service to retrieve template data from default_questions table
  * Returns DataTemplate in the same format as agreements-service
  */
 @Service
 public class TemplateDataService {
     
     @Autowired
-    private QuestionRepository questionRepository;
+    private DefaultQuestionsRepository defaultQuestionsRepository;
     
     @Autowired
-    private QuestionsToDataTemplateMapper mapper;
+    private DefaultQuestionsToDataTemplateMapper mapper;
     
     @Autowired
     private Rollbar rollbar;
@@ -30,13 +30,16 @@ public class TemplateDataService {
     /**
      * Get DataTemplates for agreement, lot, and event type
      * 
-     * Queries questions table for templates with:
-     * - event_id = "TEMPLATE:{agreementId}:{lotId}:{eventType}"
-     * - is_default_question = true
+     * Queries default_questions table for templates by:
+     * - agreement_id
+     * - lot_id
+     * 
+     * Note: eventType parameter is kept for API compatibility but not used in query
+     * (default_questions table doesn't have event_type column)
      * 
      * @param agreementId Agreement ID (e.g., "RM1043.8")
      * @param lotId Lot ID (e.g., "1" or "Lot 1")
-     * @param eventType Event type (e.g., "FC")
+     * @param eventType Event type (e.g., "FC") - kept for API compatibility
      * @return List of DataTemplate objects (same format as agreements-service)
      */
     public List<DataTemplate> getEventDataTemplates(
@@ -46,23 +49,18 @@ public class TemplateDataService {
             // Format lot ID (remove "Lot " prefix if present)
             String formattedLotId = formatLotId(lotId);
             
-            // Construct template event_id pattern
-            // Templates are stored with event_id = "TEMPLATE:{agreementId}:{lotId}:{eventType}"
-            String templateEventId = String.format("TEMPLATE:%s:%s:%s", 
-                agreementId, formattedLotId, eventType);
+            // Query default questions from default_questions table
+            // Directly by agreement_id and lot_id
+            List<DefaultQuestions> defaultQuestions = defaultQuestionsRepository
+                .findByAgreementIdAndLotIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(
+                    agreementId, formattedLotId);
             
-            // Query template questions from questions table
-            // Using is_default_question = true to identify templates
-            List<Questions> templateQuestions = questionRepository
-                .findByEventIdAndIsDefaultQuestionTrueOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(
-                    templateEventId);
-            
-            if (templateQuestions == null || templateQuestions.isEmpty()) {
+            if (defaultQuestions == null || defaultQuestions.isEmpty()) {
                 return Collections.emptyList();
             }
             
-            // Convert flat questions to hierarchical DataTemplate structure
-            return mapper.mapToDataTemplate(templateQuestions);
+            // Convert flat default questions to hierarchical DataTemplate structure
+            return mapper.mapToDataTemplate(defaultQuestions);
             
         } catch (Exception ex) {
             rollbar.error(ex, "Error fetching data templates for agreement: " + agreementId + 
