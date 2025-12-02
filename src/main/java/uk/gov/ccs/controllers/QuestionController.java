@@ -13,7 +13,6 @@ import uk.gov.ccs.entity.Questions;
 import uk.gov.ccs.exceptions.ResourceNotFoundException;
 import uk.gov.ccs.model.agreements.DataTemplate;
 import uk.gov.ccs.services.TemplateDataService;
-import uk.gov.ccs.services.TemplateDataService;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -30,9 +29,6 @@ public class QuestionController extends BaseController {
 
     @Autowired
     private QuestionLogicClient questionLogicClient;
-
-    @Autowired
-    private TemplateDataService templateDataService;
 
     /**
      * Retrieve questions for an eventId grouped into criteria and question group.
@@ -71,7 +67,7 @@ public class QuestionController extends BaseController {
                 agreementId, lotId, eventType, agreementId, lotId, eventType);
         
         try {
-            List<DataTemplate> templates = templateDataService.getEventDataTemplates(
+            List<DataTemplate> templates = questionLogicClient.getEventDataTemplates(
                 agreementId, lotId, eventType);
             
             if (templates == null || templates.isEmpty()) {
