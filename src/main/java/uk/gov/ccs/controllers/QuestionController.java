@@ -53,7 +53,10 @@ public class QuestionController extends BaseController {
      * @param apiKey - todo
      * @return {@link List<DataTemplate>}
      */
+    @GetMapping("/{agreement-id}/lots/{lot-id}/event-types/{event-type}/data-templates")
     List<DataTemplate> getEventDataTemplates(@PathVariable("agreement-id") String agreementId, @PathVariable("lot-id") String lotId, @PathVariable("event-type") String eventType, @RequestHeader("x-api-key") String apiKey) {
+        //TODO Raja is working on this bit to map data
+        log.debug("GET - /questions/{agreement-id}/lots/{lot-id}/event-types/{event-type}/data-templates - Retrieving questions with");
         return null;
     }
 
