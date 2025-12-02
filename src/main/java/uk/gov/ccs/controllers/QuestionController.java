@@ -12,6 +12,8 @@ import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
 import uk.gov.ccs.entity.Questions;
 import uk.gov.ccs.exceptions.ResourceNotFoundException;
 import uk.gov.ccs.model.agreements.DataTemplate;
+import uk.gov.ccs.services.TemplateDataService;
+import uk.gov.ccs.services.TemplateDataService;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -28,6 +30,9 @@ public class QuestionController extends BaseController {
 
     @Autowired
     private QuestionLogicClient questionLogicClient;
+
+    @Autowired
+    private TemplateDataService templateDataService;
 
     /**
      * Retrieve questions for an eventId grouped into criteria and question group.
@@ -47,20 +52,44 @@ public class QuestionController extends BaseController {
     }
 
     /**
-     * Return template data.
-     * @param agreementId - todo
-     * @param lotId - todo
-     * @param eventType - todo
-     * @return {@link List<DataTemplate>}
+     * Return template data from questions table.
+     * Returns DataTemplate in the same format as agreements-service.
+     * 
+     * @param agreementId Agreement ID (e.g., "RM1043.8")
+     * @param lotId Lot ID (e.g., "1")
+     * @param eventType Event type (e.g., "FC")
+     * @return List of DataTemplate objects (same format as agreements-service)
      */
     @GetMapping("/{agreement-id}/lots/{lot-id}/event-types/{event-type}/data-templates")
-    List<DataTemplate> getEventDataTemplates(@PathVariable("agreement-id") String agreementId,
-                                             @PathVariable("lot-id") String lotId,
-                                             @PathVariable("event-type") String eventType) {
-        //TODO Raja is working on this bit to map data
-        log.debug("GET - /questions/{agreement-id}/lots/{lot-id}/event-types/{event-type}/data-templates - " +
-                "Retrieving questions for agreementId: {}, lotId: {} and eventType: {}", agreementId, lotId, eventType);
-        return new ArrayList<>();
+    public ResponseEntity<List<DataTemplate>> getEventDataTemplates(
+            @PathVariable("agreement-id") String agreementId,
+            @PathVariable("lot-id") String lotId,
+            @PathVariable("event-type") String eventType) {
+        
+        log.debug("GET /questions/{}/lots/{}/event-types/{}/data-templates - " +
+                "Retrieving template data for agreementId: {}, lotId: {}, eventType: {}", 
+                agreementId, lotId, eventType, agreementId, lotId, eventType);
+        
+        try {
+            List<DataTemplate> templates = templateDataService.getEventDataTemplates(
+                agreementId, lotId, eventType);
+            
+            if (templates == null || templates.isEmpty()) {
+                log.debug("No templates found for agreement: {}, lot: {}, eventType: {}", 
+                    agreementId, lotId, eventType);
+                return ResponseEntity.notFound().build();
+            }
+            
+            log.debug("Found {} template(s) for agreement: {}, lot: {}, eventType: {}", 
+                templates.size(), agreementId, lotId, eventType);
+            return ResponseEntity.ok(templates);
+            
+        } catch (Exception ex) {
+            log.error("Error fetching data templates", ex);
+            rollbar.error(ex, "Error fetching data templates for agreement: " + agreementId + 
+                ", lot: " + lotId + ", eventType: " + eventType);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**
