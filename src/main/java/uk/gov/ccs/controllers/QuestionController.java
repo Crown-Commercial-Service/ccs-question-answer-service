@@ -11,6 +11,7 @@ import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
 import uk.gov.ccs.entity.Questions;
 import uk.gov.ccs.exceptions.ResourceNotFoundException;
+import uk.gov.ccs.model.agreements.DataTemplate;
 
 import java.net.URI;
 import java.util.List;
@@ -44,6 +45,17 @@ public class QuestionController extends BaseController {
         }
     }
 
+    /**
+     * Return template data.
+     * @param agreementId - todo
+     * @param lotId - todo
+     * @param eventType - todo
+     * @param apiKey - todo
+     * @return {@link List<DataTemplate>}
+     */
+    List<DataTemplate> getEventDataTemplates(@PathVariable("agreement-id") String agreementId, @PathVariable("lot-id") String lotId, @PathVariable("event-type") String eventType, @RequestHeader("x-api-key") String apiKey) {
+        return null;
+    }
 
     /**
      * POST endpoint to create questions.
