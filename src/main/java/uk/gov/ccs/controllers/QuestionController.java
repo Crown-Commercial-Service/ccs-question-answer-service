@@ -14,6 +14,7 @@ import uk.gov.ccs.exceptions.ResourceNotFoundException;
 import uk.gov.ccs.model.agreements.DataTemplate;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.ccs.constants.Constants.responses_Success;
@@ -50,7 +51,6 @@ public class QuestionController extends BaseController {
      * @param agreementId - todo
      * @param lotId - todo
      * @param eventType - todo
-     * @param apiKey - todo
      * @return {@link List<DataTemplate>}
      */
     @GetMapping("/{agreement-id}/lots/{lot-id}/event-types/{event-type}/data-templates")
@@ -60,7 +60,7 @@ public class QuestionController extends BaseController {
         //TODO Raja is working on this bit to map data
         log.debug("GET - /questions/{agreement-id}/lots/{lot-id}/event-types/{event-type}/data-templates - " +
                 "Retrieving questions for agreementId: {}, lotId: {} and eventType: {}", agreementId, lotId, eventType);
-        return null;
+        return new ArrayList<>();
     }
 
     /**
