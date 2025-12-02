@@ -11,8 +11,10 @@ import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
 import uk.gov.ccs.entity.Questions;
 import uk.gov.ccs.exceptions.ResourceNotFoundException;
+import uk.gov.ccs.model.agreements.DataTemplate;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.ccs.constants.Constants.responses_Success;
@@ -44,6 +46,22 @@ public class QuestionController extends BaseController {
         }
     }
 
+    /**
+     * Return template data.
+     * @param agreementId - todo
+     * @param lotId - todo
+     * @param eventType - todo
+     * @return {@link List<DataTemplate>}
+     */
+    @GetMapping("/{agreement-id}/lots/{lot-id}/event-types/{event-type}/data-templates")
+    List<DataTemplate> getEventDataTemplates(@PathVariable("agreement-id") String agreementId,
+                                             @PathVariable("lot-id") String lotId,
+                                             @PathVariable("event-type") String eventType) {
+        //TODO Raja is working on this bit to map data
+        log.debug("GET - /questions/{agreement-id}/lots/{lot-id}/event-types/{event-type}/data-templates - " +
+                "Retrieving questions for agreementId: {}, lotId: {} and eventType: {}", agreementId, lotId, eventType);
+        return new ArrayList<>();
+    }
 
     /**
      * POST endpoint to create questions.

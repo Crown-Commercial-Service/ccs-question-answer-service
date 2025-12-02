@@ -32,8 +32,6 @@
         <lombok.version>1.18.42</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <compiler.version>3.14.1</compiler.version>
-        <jackson.version>2.20.1</jackson.version>
-        <jackson-annotations.version>2.20</jackson-annotations.version>
         <commons.version>2.21.0</commons.version>
         <commonscsv.version>1.14.1</commonscsv.version>
         <aws.version>3.4.1</aws.version>
@@ -54,7 +52,7 @@
         <hibernate.version>6.6.32.Final</hibernate.version>
         <jackson.databind.nullable.version>0.2.8</jackson.databind.nullable.version>
         <springdoc.openapi.ui.version>1.8.0</springdoc.openapi.ui.version>
-        <feignclient.version>5.0.0</feignclient.version>
+        <feignclient.version>4.3.0</feignclient.version>
     </properties>
 
     <dependencyManagement>
@@ -95,21 +93,6 @@
             <groupId>org.ehcache</groupId>
             <artifactId>ehcache</artifactId>
             <version>${ehcache.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>${jackson-annotations.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -189,9 +172,8 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.openapitools</groupId>
-            <artifactId>jackson-databind-nullable</artifactId>
-            <version>${jackson.databind.nullable.version}</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
