@@ -46,4 +46,14 @@ public interface QuestionRepository extends JpaRepository<Questions, Long> {
     @Modifying
     @Transactional
     long deleteByEventIdAndQuestionId(String eventId, String questionId);
+
+    /**
+     * Find template questions by event_id and is_default_question flag.
+     * This identifies templates vs event-specific questions.
+     * 
+     * @param eventId Event ID (e.g., "TEMPLATE:RM1043.8:1:FC" or actual event ID)
+     * @return Ordered list of template questions
+     */
+    List<Questions> findByEventIdAndIsDefaultQuestionTrueOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(
+        String eventId);
 }

@@ -8,7 +8,9 @@ import org.springframework.stereotype.Component;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
 import uk.gov.ccs.entity.Questions;
+import uk.gov.ccs.model.agreements.DataTemplate;
 import uk.gov.ccs.services.QuestionService;
+import uk.gov.ccs.services.TemplateDataService;
 
 import java.util.List;
 
@@ -20,6 +22,9 @@ import java.util.List;
 public class QuestionLogicClient {
     @Autowired
     private QuestionService questionService;
+
+    @Autowired
+    private TemplateDataService templateDataService;
 
     @Autowired
     private Rollbar rollbar;
@@ -98,6 +103,27 @@ public class QuestionLogicClient {
     @CacheEvict(value = "qAndACache", key = "'getQuestionsWithEventId-' + #eventId")
     public long deleteQuestion(String eventId, String questionId) {
         return questionService.deleteQuestion(eventId, questionId);
+    }
+
+    /**
+     * Get DataTemplates for agreement, lot, and event type from questions table.
+     * Returns DataTemplate in the same format as agreements-service.
+     * 
+     * @param agreementId Agreement ID (e.g., "RM1043.8")
+     * @param lotId Lot ID (e.g., "1")
+     * @param eventType Event type (e.g., "FC")
+     * @return List of DataTemplate objects (same format as agreements-service)
+     */
+    @Cacheable(value = "dataTemplatesCache", key = "#agreementId + '-' + #lotId + '-' + #eventType")
+    public List<DataTemplate> getEventDataTemplates(
+            String agreementId, String lotId, String eventType) {
+        try {
+            return templateDataService.getEventDataTemplates(agreementId, lotId, eventType);
+        } catch (Exception ex) {
+            rollbar.error(ex, "Error getting event data templates for agreement: " + agreementId + 
+                ", lot: " + lotId + ", eventType: " + eventType);
+            throw ex;
+        }
     }
 }
 

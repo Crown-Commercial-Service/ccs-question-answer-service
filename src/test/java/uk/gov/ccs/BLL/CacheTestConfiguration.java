@@ -26,7 +26,7 @@ class CacheTestConfiguration {
     @Bean
     public CacheManager cacheManager() {
         // Use a simple, in-memory cache manager (ConcurrentMapCacheManager)
-        // Ensure the cache name is initialized to match the annotation value
-        return new ConcurrentMapCacheManager("qAndACache");
+        // Ensure the cache names are initialized to match the annotation values
+        return new ConcurrentMapCacheManager("qAndACache", "dataTemplatesCache", "questions");
     }
 }

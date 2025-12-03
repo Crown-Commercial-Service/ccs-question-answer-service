@@ -39,6 +39,9 @@ public class CacheConfig {
         
         // Establish questions cache for question-related operations
         cacheManager.createCache("questions", primaryCacheConfig);
+        
+        // Establish data templates cache for template data retrieval
+        cacheManager.createCache("dataTemplatesCache", primaryCacheConfig);
 
         return cacheManager;
     }
