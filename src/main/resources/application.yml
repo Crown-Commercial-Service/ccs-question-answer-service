@@ -22,8 +22,6 @@ config:
 
 # Error and Spring configuration
 spring:
-  profiles:
-    active: local
   cloud:
     aws:
       region:
