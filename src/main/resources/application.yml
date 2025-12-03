@@ -33,12 +33,19 @@ spring:
   mvc:
     throw-exception-if-no-handler-found: true
   jpa:
+    open-in-view: false
+    database: postgresql
+    show-sql: false
     hibernate:
       ddl-auto: create-drop
-    show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.HSQLDialect
+        format_sql: false
+        enable_lazy_load_no_trans: true
+  datasource:
+    hikari:
+      connectionTimeout: 10000
+      maximumPoolSize: 30
 
 # Actuator config
 management:
