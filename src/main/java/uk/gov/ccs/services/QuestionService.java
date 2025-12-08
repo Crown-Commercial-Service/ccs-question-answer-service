@@ -36,7 +36,7 @@ public class QuestionService {
     @Autowired
     private DataTemplateMapper dataTemplateMapper;
     
-    @Value("${external-services.agreements-service.api-key:}")
+    @Value("${external-services.agreements-service.api-key}")
     private String agreementServiceApiKey;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
