@@ -43,6 +43,7 @@ public class QuestionController extends BaseController {
             return ResponseEntity
                     .ok(questionLogicClient.getQuestionsWithEventId(eventId));
         } catch (Exception ex) {
+            log.error("GET /questions - Error fetching questions, eventId: {}", eventId, ex);
             throw new ResourceNotFoundException("No question details found for this eventId " + eventId);
         }
     }
@@ -193,7 +194,7 @@ public class QuestionController extends BaseController {
             return ResponseEntity.ok(responses_Success);
 
         } catch (Exception ex) {
-            log.error("DELETE /questions - Error deleting questions", ex);
+            log.error("DELETE /questions - Error deleting questions. eventId: {}, questionId: {}", eventId, questionId, ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
