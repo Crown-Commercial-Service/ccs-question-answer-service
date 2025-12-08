@@ -35,9 +35,10 @@ spring:
     database: postgresql
     show-sql: false
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     properties:
       hibernate:
+        default_schema: qanda
         format_sql: false
         enable_lazy_load_no_trans: true
   datasource:
