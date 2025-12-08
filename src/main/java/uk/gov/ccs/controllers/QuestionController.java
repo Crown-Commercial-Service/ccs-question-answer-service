@@ -177,16 +177,24 @@ public class QuestionController extends BaseController {
             @PathVariable String eventId,
             @PathVariable String questionId) {
 
-        long count = questionLogicClient.deleteQuestion(eventId, questionId);
-        if (count == 0) {
-            rollbar.error("DELETE /questions failed, no match found for the eventId and questionId."
-                    + "eventId=" + eventId + " questionId= " + questionId);
-            return ResponseEntity.notFound().build();
+        try {
+            long count = questionLogicClient.deleteQuestion(eventId, questionId);
+            if (count == 0) {
+                log.error("DELETE /questions - Failed to delete question, as no record found. eventId: {}, " +
+                        "questionId: {}", eventId, questionId);
+                rollbar.error("DELETE /questions failed, no match found for the eventId and questionId."
+                        + "eventId=" + eventId + " questionId= " + questionId);
+                return ResponseEntity.notFound().build();
+            }
+
+            log.debug("DELETE /questions - Successfully deleted the question eventId: {}, " +
+                    "questionId: {}", eventId, questionId);
+
+            return ResponseEntity.ok(responses_Success);
+
+        } catch (Exception ex) {
+            log.error("DELETE /questions - Error deleting questions", ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-
-        log.debug("DELETE /questions - Successfully deleted the question eventId: {}, " +
-                "questionId: {}", eventId, questionId);
-
-        return ResponseEntity.ok(responses_Success);
     }
 }
