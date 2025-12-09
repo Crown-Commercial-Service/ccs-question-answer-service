@@ -3,6 +3,8 @@ package uk.gov.ccs.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rollbar.notifier.Rollbar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,8 @@ import java.util.List;
  */
 @Service
 public class QuestionService {
+
+    private static final Logger log = LoggerFactory.getLogger(QuestionService.class);
 
     @Autowired
     private QuestionRepository questionRepository;
@@ -133,8 +137,16 @@ public class QuestionService {
             return response;
         } catch (IllegalArgumentException ex) {
             // Re-throw validation errors
+            log.error("Error saving questions from payload. eventId: {}, " +
+                            "agreementId: {}, lotId: {}, and API key: {}",
+                    questionWrite.getEventId(), questionWrite.getAgreementId(),
+                    questionWrite.getLotId(), agreementServiceApiKey);
             throw ex;
         } catch (Exception ex) {
+            log.error("Failed to save into database. eventId: {}, " +
+                            "agreementId: {}, lotId: {}, and API key: {}",
+                    questionWrite.getEventId(), questionWrite.getAgreementId(),
+                    questionWrite.getLotId(), agreementServiceApiKey);
             rollbar.error(ex, "Error saving questions from payload for eventId: " + questionWrite.getEventId());
             throw ex;
         }
@@ -144,6 +156,7 @@ public class QuestionService {
      * Validates that all required fields are present and not null/empty
      */
     private void validateQuestionData(QuestionWrite questionWrite) {
+
         if (questionWrite.getCriterion() == null || questionWrite.getCriterion().isEmpty()) {
             return; // Empty criterion list is allowed (will fetch from template)
         }
@@ -151,9 +164,11 @@ public class QuestionService {
         for (Criterion criterion : questionWrite.getCriterion()) {
             // Validate criterion required fields
             if (criterion.getCriteriaId() == null || criterion.getCriteriaId().trim().isEmpty()) {
+                log.error("Criterion criteriaId is required and cannot be null or empty");
                 throw new IllegalArgumentException("Criterion criteriaId is required and cannot be null or empty");
             }
             if (criterion.getTitle() == null || criterion.getTitle().trim().isEmpty()) {
+                log.error("Criterion title is required and cannot be null or empty");
                 throw new IllegalArgumentException("Criterion title is required and cannot be null or empty");
             }
 
@@ -164,15 +179,19 @@ public class QuestionService {
             for (QuestionGroup group : criterion.getRequirementGroups()) {
                 // Validate group required fields
                 if (group.getGroupId() == null || group.getGroupId().trim().isEmpty()) {
+                    log.error("QuestionGroup groupId is required and cannot be null or empty");
                     throw new IllegalArgumentException("QuestionGroup groupId is required and cannot be null or empty");
                 }
                 if (group.getTask() == null || group.getTask().trim().isEmpty()) {
+                    log.error("QuestionGroup task is required and cannot be null or empty");
                     throw new IllegalArgumentException("QuestionGroup task is required and cannot be null or empty");
                 }
                 if (group.getOrder() == null) {
+                    log.error("QuestionGroup order is required and cannot be null");
                     throw new IllegalArgumentException("QuestionGroup order is required and cannot be null");
                 }
                 if (group.getMandatory() == null) {
+                    log.error("QuestionGroup mandatory is required and cannot be null");
                     throw new IllegalArgumentException("QuestionGroup mandatory is required and cannot be null");
                 }
 
@@ -183,30 +202,39 @@ public class QuestionService {
                 for (Question question : group.getRequirements()) {
                     // Validate question required fields
                     if (question.getQuestionId() == null || question.getQuestionId().trim().isEmpty()) {
+                        log.error("Question questionId is required and cannot be null or empty");
                         throw new IllegalArgumentException("Question questionId is required and cannot be null or empty");
                     }
                     if (question.getTitle() == null || question.getTitle().trim().isEmpty()) {
+                        log.error("Question title is required and cannot be null or empty");
                         throw new IllegalArgumentException("Question title is required and cannot be null or empty");
                     }
                     if (question.getDataType() == null || question.getDataType().trim().isEmpty()) {
+                        log.error("Question dataType is required and cannot be null or empty");
                         throw new IllegalArgumentException("Question dataType is required and cannot be null or empty");
                     }
                     if (question.getOrder() == null) {
+                        log.error("Question order is required and cannot be null");
                         throw new IllegalArgumentException("Question order is required and cannot be null");
                     }
                     if (question.getAnswered() == null) {
+                        log.error("Question answered is required and cannot be null");
                         throw new IllegalArgumentException("Question answered is required and cannot be null");
                     }
                     if (question.getMandatory() == null) {
+                        log.error("Question mandatory is required and cannot be null");
                         throw new IllegalArgumentException("Question mandatory is required and cannot be null");
                     }
                     if (question.getMultiAnswer() == null) {
+                        log.error("Question multiAnswer is required and cannot be null");
                         throw new IllegalArgumentException("Question multiAnswer is required and cannot be null");
                     }
                     if (question.getQuestionType() == null || question.getQuestionType().trim().isEmpty()) {
+                        log.error("Question questionType is required and cannot be null or empty");
                         throw new IllegalArgumentException("Question questionType is required and cannot be null or empty");
                     }
                     if (question.getIsDefaultQuestion() == null) {
+                        log.error("Question isDefaultQuestion is required and cannot be null");
                         throw new IllegalArgumentException("Question isDefaultQuestion is required and cannot be null");
                     }
                 }
@@ -250,6 +278,7 @@ public class QuestionService {
             try {
                 existing.setQuestionDependency(objectMapper.writeValueAsString(question.getDependency()));
             } catch (JsonProcessingException e) {
+                log.warn("Error serializing question dependency to JSON: {}", e.getMessage());
                 rollbar.warning("Error serializing question dependency to JSON: " + e.getMessage());
             }
         } else {
@@ -304,6 +333,8 @@ public class QuestionService {
     public QuestionWriteResponse saveQuestionsFromTemplate(
             String eventId, String agreementId, String lotId, String eventType) {
         try {
+            log.debug("About to get template data from agreement service. eventId: {}, " +
+                    "agreementId: {}, lotId: {}, eventType: {} and API key: {}", eventId, agreementId, lotId, eventType, agreementServiceApiKey);
             // Fetch template data from agreement service using Feign client
             List<DataTemplate> dataTemplates = 
                 agreementsClient.getEventDataTemplates(agreementId, lotId, eventType, agreementServiceApiKey);
@@ -330,11 +361,20 @@ public class QuestionService {
             return saveQuestionsFromPayload(templateData);
         } catch (org.springframework.web.client.HttpClientErrorException.NotFound ex) {
             // 404 means no template data exists - this is expected and not an error
+            log.error("Error occurred while getting template data from agreement service. eventId: {}, " +
+                            "agreementId: {}, lotId: {}, eventType: {} and API key: {}",
+                    eventId, agreementId, lotId, eventType, agreementServiceApiKey);
             return null;
         } catch (feign.FeignException.NotFound ex) {
             // 404 from Feign client means no template data exists - this is expected and not an error
+            log.error("Error occurred while getting template data from agreement service. eventId: {}, " +
+                            "agreementId: {}, lotId: {}, eventType: {} and API key: {}",
+                    eventId, agreementId, lotId, eventType, agreementServiceApiKey);
             return null;
         } catch (Exception ex) {
+            log.error("Error occurred while getting template data from agreement service. eventId: {}, " +
+                    "agreementId: {}, lotId: {}, eventType: {} and API key: {}",
+                    eventId, agreementId, lotId, eventType, agreementServiceApiKey);
             rollbar.error(ex, "Error saving questions from template for eventId: " + eventId);
             throw ex;
         }
@@ -395,6 +435,7 @@ public class QuestionService {
             return questionRepository
                     .findAllByEventIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(eventId);
         } catch (Exception ex) {
+            log.error("Error to fetch questions for the eventId: {}", eventId);
             rollbar.error(ex, "Error to fetch questions for the eventId: " + eventId);
             throw ex;
         }
@@ -411,6 +452,7 @@ public class QuestionService {
         try {
             return questionRepository.deleteByEventIdAndQuestionId(eventId, questionId);
         } catch (Exception ex) {
+            log.error("Error occured while deleting question, eventId: {}, questionId: {}", eventId, questionId);
             rollbar.error(ex, "Error occured while deleting question, eventId: "
                     + eventId + " questionId: " + questionId);
             throw ex;
