@@ -68,8 +68,3 @@ external-services:
   agreements-service:
     data-templates-path: /agreements-service/agreements/{agreement-id}/lots/{lot-id}/event-types/{event-type}/data-templates
 
-
-# Enable log level to debug temporarily - should be removed once everything work as expected
-logging:
-  level:
-    ROOT: DEBUG
