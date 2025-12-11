@@ -15,6 +15,8 @@ import uk.gov.ccs.entity.Questions;
 import uk.gov.ccs.mapper.DataTemplateMapper;
 import uk.gov.ccs.model.agreements.DataTemplate;
 import uk.gov.ccs.repo.QuestionRepository;
+import java.net.InetAddress;
+import org.springframework.web.client.RestTemplate;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -335,6 +337,14 @@ public class QuestionService {
         try {
             log.debug("About to get template data from agreement service. eventId: {}, " +
                     "agreementId: {}, lotId: {}, eventType: {} and API key: {}", eventId, agreementId, lotId, eventType, agreementServiceApiKey);
+
+            try {
+                    log.debug("11121527-A: {}", InetAddress.getByName("dev.api.crowncommercial.gov.uk").getHostAddress());
+                    log.debug("11121527-B: {}", new RestTemplate().getForObject("https://checkip.amazonaws.com", String.class));
+                } catch (Exception e) {
+                    log.warn("Diagnostic network check failed: {}", e.toString());
+                }
+            
             // Fetch template data from agreement service using Feign client
             List<DataTemplate> dataTemplates = 
                 agreementsClient.getEventDataTemplates(agreementId, lotId, eventType, agreementServiceApiKey);
