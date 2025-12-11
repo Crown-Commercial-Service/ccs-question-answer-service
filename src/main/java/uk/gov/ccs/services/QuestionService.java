@@ -338,8 +338,12 @@ public class QuestionService {
             log.debug("About to get template data from agreement service. eventId: {}, " +
                     "agreementId: {}, lotId: {}, eventType: {} and API key: {}", eventId, agreementId, lotId, eventType, agreementServiceApiKey);
 
-            log.debug("11121527-A: {}", InetAddress.getByName("dev.api.crowncommercial.gov.uk").getHostAddress());
-            log.debug("11121527-B: {}", new RestTemplate().getForObject("https://checkip.amazonaws.com", String.class));
+            try {
+                    log.debug("11121527-A: {}", InetAddress.getByName("dev.api.crowncommercial.gov.uk").getHostAddress());
+                    log.debug("11121527-B: {}", new RestTemplate().getForObject("https://checkip.amazonaws.com", String.class));
+                } catch (Exception e) {
+                    log.warn("Diagnostic network check failed: {}", e.toString());
+                }
             
             // Fetch template data from agreement service using Feign client
             List<DataTemplate> dataTemplates = 
