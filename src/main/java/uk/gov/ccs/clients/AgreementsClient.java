@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import uk.gov.ccs.model.agreements.*;
+import uk.gov.ccs.config.FeignClientConfiguration;
 
 import java.util.Collection;
 import java.util.List;
