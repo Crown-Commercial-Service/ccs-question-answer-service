@@ -136,6 +136,41 @@ public class DataTemplateToDefaultQuestionsMapper {
                 }
             }
             
+            // Helper to safely get title with fallback
+            String questionTitle = null;
+            if (ocds != null) {
+                questionTitle = ocds.getTitle();
+            }
+            if (questionTitle == null || questionTitle.trim().isEmpty()) {
+                // Use question ID as fallback if title is missing
+                questionTitle = (ocds != null && ocds.getId() != null) ? ocds.getId() : "Untitled Question";
+            }
+            
+            // Helper to safely get description with fallback
+            String questionDescription = null;
+            if (ocds != null) {
+                questionDescription = ocds.getDescription();
+            }
+            if (questionDescription == null || questionDescription.trim().isEmpty()) {
+                questionDescription = questionTitle; // Use title as fallback for description
+            }
+            
+            // Helper to safely get group_task with fallback
+            String groupTask = null;
+            if (groupNonOCDS != null) {
+                groupTask = groupNonOCDS.getTask();
+            }
+            if (groupTask == null || groupTask.trim().isEmpty()) {
+                // Use group description as fallback, or group ID, or a default value
+                if (groupOcds != null && groupOcds.getDescription() != null && !groupOcds.getDescription().trim().isEmpty()) {
+                    groupTask = groupOcds.getDescription();
+                } else if (groupOcds != null && groupOcds.getId() != null) {
+                    groupTask = groupOcds.getId();
+                } else {
+                    groupTask = "Default Task";
+                }
+            }
+            
             DefaultQuestions.DefaultQuestionsBuilder builder = DefaultQuestions.builder()
                 .agreementId(agreementId)
                 .lotId(lotId)
@@ -143,13 +178,13 @@ public class DataTemplateToDefaultQuestionsMapper {
                 .criterionTitle(criteria.getTitle())
                 .groupId(groupOcds != null ? groupOcds.getId() : null)
                 .groupDescription(groupOcds != null ? groupOcds.getDescription() : null)
-                .groupTask(groupNonOCDS != null ? groupNonOCDS.getTask() : null)
+                .groupTask(groupTask)
                 .groupOrder(groupNonOCDS != null ? groupNonOCDS.getOrder() : null)
                 .groupPrompt(groupNonOCDS != null ? groupNonOCDS.getPrompt() : null)
                 .groupMandatory(groupNonOCDS != null ? groupNonOCDS.getMandatory() : null)
                 .questionId(ocds != null ? ocds.getId() : null)
-                .questionTitle(ocds != null ? ocds.getTitle() : null)
-                .questionDescription(ocds != null ? ocds.getDescription() : null)
+                .questionTitle(questionTitle)
+                .questionDescription(questionDescription)
                 .questionDataType(ocds != null ? ocds.getDataType() : null)
                 .questionOrder(nonOCDS != null ? nonOCDS.getOrder() : null)
                 .questionAnswered(nonOCDS != null && nonOCDS.getAnswered() != null ? nonOCDS.getAnswered() : false)
