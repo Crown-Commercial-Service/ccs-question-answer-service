@@ -66,6 +66,7 @@ management:
 # External services information
 external-services:
   agreements-service:
+    base-path: ${EXTERNAL_SERVICES_AGREEMENTS_SERVICE_BASE_PATH:https://dev.api.crowncommercial.gov.uk}
     data-templates-path: /agreements-service/agreements/{agreement-id}/lots/{lot-id}/event-types/{event-type}/data-templates
 
 
