@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Web client to interface with the Agreements Service API
  */
-@FeignClient(name = "agreementsClient", url = "${external-services.agreements-service.base-path}")
+@FeignClient(name = "agreementsClient", url = "${external-services.agreements-service.base-path}", configuration = FeignClientConfiguration.class)
 public interface AgreementsClient {
 
     @GetMapping("${external-services.agreements-service.data-templates-path}")
