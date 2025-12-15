@@ -1,16 +1,9 @@
 package uk.gov.ccs.mapper;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rollbar.notifier.Rollbar;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.ccs.entity.DefaultQuestions;
-import uk.gov.ccs.model.agreements.DataTemplate;
-import uk.gov.ccs.model.agreements.Dependency;
-import uk.gov.ccs.model.agreements.Requirement;
-import uk.gov.ccs.model.agreements.RequirementGroup;
-import uk.gov.ccs.model.agreements.TemplateCriteria;
+import uk.gov.ccs.model.agreements.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,12 +13,8 @@ import java.util.stream.Collectors;
  * Returns the same format as agreements-service
  */
 @Component
-public class DefaultQuestionsToDataTemplateMapper {
-    
-    @Autowired
-    private Rollbar rollbar;
-    
-    private final ObjectMapper objectMapper = new ObjectMapper();
+public class DefaultQuestionsToDataTemplateMapper extends BaseMapper {
+
     
     /**
      * Convert flat DefaultQuestions list to hierarchical DataTemplate structure
@@ -38,71 +27,60 @@ public class DefaultQuestionsToDataTemplateMapper {
         if (defaultQuestions == null || defaultQuestions.isEmpty()) {
             return Collections.emptyList();
         }
-        
+
         try {
-            // Group by criteria_id to create TemplateCriteria
-            Map<String, List<DefaultQuestions>> byCriteria = defaultQuestions.stream()
-                .collect(Collectors.groupingBy(DefaultQuestions::getCriteriaId));
-            
-            List<DataTemplate> dataTemplates = new ArrayList<>();
-            
-            // For each criteria, create a DataTemplate
-            for (Map.Entry<String, List<DefaultQuestions>> criteriaEntry : byCriteria.entrySet()) {
-                String criteriaId = criteriaEntry.getKey();
-                List<DefaultQuestions> criteriaQuestions = criteriaEntry.getValue();
-                
-                if (criteriaQuestions.isEmpty()) {
-                    continue;
-                }
-                
-                // Get criterion metadata from first question
-                DefaultQuestions firstQuestion = criteriaQuestions.get(0);
-                String criterionTitle = firstQuestion.getCriterionTitle();
-                
-                // Group by group_id to create RequirementGroups
-                Map<String, List<DefaultQuestions>> byGroup = criteriaQuestions.stream()
-                    .collect(Collectors.groupingBy(DefaultQuestions::getGroupId));
-                
-                // Build RequirementGroups
-                Set<RequirementGroup> requirementGroups = new LinkedHashSet<>();
-                for (Map.Entry<String, List<DefaultQuestions>> groupEntry : byGroup.entrySet()) {
-                    String groupId = groupEntry.getKey();
-                    List<DefaultQuestions> groupQuestions = groupEntry.getValue();
-                    
-                    RequirementGroup group = buildRequirementGroup(groupId, groupQuestions);
-                    if (group != null) {
-                        requirementGroups.add(group);
-                    }
-                }
-                
-                // Build TemplateCriteria
-                TemplateCriteria criteria = TemplateCriteria.builder()
-                    .id(criteriaId)
-                    .title(criterionTitle)
-                    .description(null) // Not available in default_questions table
-                    .source(null) // Not available in default_questions table
-                    .relatesTo(null) // Not available in default_questions table
-                    .relateItems(null) // Not available in default_questions table
-                    .inheritanceNonOCDS(null) // Not available in default_questions table
-                    .requirementGroups(requirementGroups)
-                    .build();
-                
-                // Build DataTemplate
-                // Note: id, templateName, parent, mandatory are not stored in default_questions table
-                // These are typically null in agreements-service response as well
-                DataTemplate dataTemplate = DataTemplate.builder()
-                    .id(null) // Not available in default_questions table
-                    .templateName(null) // Not available in default_questions table
-                    .parent(null) // Not available in default_questions table
-                    .mandatory(null) // Not available in default_questions table
-                    .criteria(List.of(criteria))
-                    .build();
-                
-                dataTemplates.add(dataTemplate);
-            }
-            
-            return dataTemplates;
+            // Group by criteriaId to form the base structure (DataTemplate -> TemplateCriteria)
+            return defaultQuestions.stream()
+                    .collect(Collectors.groupingBy(DefaultQuestions::getCriteriaId))
+                    .entrySet().stream()
+                    // Map each criteria group to a DataTemplate
+                    .map(criteriaEntry -> {
+                        String criteriaId = criteriaEntry.getKey();
+                        List<DefaultQuestions> criteriaQuestions = criteriaEntry.getValue();
+
+                        if (criteriaQuestions.isEmpty()) {
+                            return null;
+                        }
+
+                        // Get criterion metadata from first question
+                        DefaultQuestions firstQuestion = criteriaQuestions.get(0);
+                        String criterionTitle = firstQuestion.getCriterionTitle();
+
+                        // Group by groupId and map to RequirementGroups
+                        Set<RequirementGroup> requirementGroups = criteriaQuestions.stream()
+                                .collect(Collectors.groupingBy(DefaultQuestions::getGroupId))
+                                .entrySet().stream()
+                                // 4. Map each group entry to a RequirementGroup
+                                .map(groupEntry -> buildRequirementGroup(groupEntry.getKey(), groupEntry.getValue()))
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toCollection(LinkedHashSet::new)); // Preserve insertion order if possible
+
+                        // Build TemplateCriteria
+                        TemplateCriteria criteria = TemplateCriteria.builder()
+                                .id(criteriaId)
+                                .title(criterionTitle)
+                                .description(null)
+                                .source(null)
+                                .relatesTo(null)
+                                .relateItems(null)
+                                .inheritanceNonOCDS(null)
+                                .requirementGroups(requirementGroups)
+                                .build();
+
+                        // Build DataTemplate (wrapping the single criteria)
+                        return DataTemplate.builder()
+                                .id(null)
+                                .templateName(null)
+                                .parent(null)
+                                .mandatory(null)
+                                .criteria(List.of(criteria))
+                                .build();
+                    })
+                    .filter(Objects::nonNull) // Filter out any unexpected nulls
+                    .collect(Collectors.toList());
+
         } catch (Exception ex) {
+            log.error("Error mapping DefaultQuestions to DataTemplate. error {}", ex.getMessage());
             rollbar.error(ex, "Error mapping DefaultQuestions to DataTemplate");
             return Collections.emptyList();
         }
@@ -187,6 +165,7 @@ public class DefaultQuestionsToDataTemplateMapper {
                     // Map to Dependency object
                     dependency = mapDependency(dependencyMap);
                 } catch (Exception ex) {
+                    log.error("Error parsing question dependency. error {}", ex.getMessage());
                     rollbar.warning("Error parsing question dependency: " + ex.getMessage());
                 }
             }
@@ -199,20 +178,8 @@ public class DefaultQuestionsToDataTemplateMapper {
                 .nonOCDS(nonOCDS)
                 .build();
         } catch (Exception ex) {
+            log.error("Error building Requirement from DefaultQuestions. error {}", ex.getMessage());
             rollbar.warning("Error building Requirement from DefaultQuestions: " + ex.getMessage());
-            return null;
-        }
-    }
-    
-    /**
-     * Map dependency JSON to Dependency object
-     */
-    private Dependency mapDependency(Map<String, Object> dependencyMap) {
-        try {
-            // Convert Map to Dependency using ObjectMapper
-            return objectMapper.convertValue(dependencyMap, Dependency.class);
-        } catch (Exception ex) {
-            rollbar.warning("Error mapping dependency: " + ex.getMessage());
             return null;
         }
     }

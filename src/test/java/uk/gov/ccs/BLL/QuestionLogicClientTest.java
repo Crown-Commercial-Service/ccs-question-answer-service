@@ -10,8 +10,11 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cache.CacheManager;
 import uk.gov.ccs.clients.AgreementsClient;
 import uk.gov.ccs.mapper.DataTemplateMapper;
+import uk.gov.ccs.mapper.DataTemplateToDefaultQuestionsMapper;
 import uk.gov.ccs.model.agreements.DataTemplate;
+import uk.gov.ccs.repo.DefaultQuestionsRepository;
 import uk.gov.ccs.repo.QuestionRepository;
+import uk.gov.ccs.services.DefaultQuestionsLoaderService;
 import uk.gov.ccs.services.QuestionService;
 import uk.gov.ccs.services.TemplateDataService;
 
@@ -35,6 +38,12 @@ class QuestionLogicClientTest {
     private QuestionRepository questionRepository;
 
     @MockBean
+    private DefaultQuestionsRepository defaultQuestionsRepository;
+
+    @MockBean
+    private DataTemplateToDefaultQuestionsMapper dataTemplateToDefaultQuestionsMapper;
+
+    @MockBean
     private Rollbar rollbar;
 
     @MockBean
@@ -52,6 +61,9 @@ class QuestionLogicClientTest {
     // Spy on the service to verify how many times its method is actually called
     @SpyBean
     private QuestionService questionService;
+
+    @SpyBean
+    private DefaultQuestionsLoaderService defaultQuestionsLoaderService;
 
     // Inject the CacheManager to manually clear the cache before each test
     @Autowired

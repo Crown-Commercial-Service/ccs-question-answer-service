@@ -1,6 +1,5 @@
 package uk.gov.ccs.services;
 
-import com.rollbar.notifier.Rollbar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.ccs.entity.DefaultQuestions;
@@ -16,16 +15,13 @@ import java.util.List;
  * Returns DataTemplate in the same format as agreements-service
  */
 @Service
-public class TemplateDataService {
+public class TemplateDataService extends BaseService {
     
     @Autowired
     private DefaultQuestionsRepository defaultQuestionsRepository;
     
     @Autowired
     private DefaultQuestionsToDataTemplateMapper mapper;
-    
-    @Autowired
-    private Rollbar rollbar;
     
     /**
      * Get DataTemplates for agreement, lot, and event type
@@ -44,7 +40,9 @@ public class TemplateDataService {
      */
     public List<DataTemplate> getEventDataTemplates(
             String agreementId, String lotId, String eventType) {
-        
+
+        final String context = String.format("agreement: %s, lot: %s, eventType: %s",
+                agreementId, lotId, eventType);
         try {
             // Format lot ID (remove "Lot " prefix if present)
             String formattedLotId = formatLotId(lotId);
@@ -56,27 +54,21 @@ public class TemplateDataService {
                     agreementId, formattedLotId);
             
             if (defaultQuestions == null || defaultQuestions.isEmpty()) {
+                log.debug("No default questions found for {}", context);
                 return Collections.emptyList();
             }
-            
+
+            log.debug("Found {} default questions for {}. Mapping to DataTemplate structure.",
+                    defaultQuestions.size(), context);
             // Convert flat default questions to hierarchical DataTemplate structure
             return mapper.mapToDataTemplate(defaultQuestions);
             
         } catch (Exception ex) {
-            rollbar.error(ex, "Error fetching data templates for agreement: " + agreementId + 
-                ", lot: " + lotId + ", eventType: " + eventType);
+            final String errorMsg = "Error fetching data templates for " + context;
+            log.error(errorMsg, ex);
+            rollbar.error(ex, errorMsg);
             return Collections.emptyList();
         }
-    }
-    
-    /**
-     * Format lot ID (remove "Lot " prefix if present)
-     */
-    private String formatLotId(String lotId) {
-        if (lotId == null) {
-            return null;
-        }
-        return lotId.replace("Lot ", "").trim();
     }
 }
 
