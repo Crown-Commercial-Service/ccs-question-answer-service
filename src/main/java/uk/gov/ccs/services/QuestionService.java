@@ -1,23 +1,19 @@
 package uk.gov.ccs.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rollbar.notifier.Rollbar;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import uk.gov.ccs.clients.AgreementsClient;
 import uk.gov.ccs.dts.qas.model.generated.*;
 import uk.gov.ccs.entity.Questions;
 import uk.gov.ccs.mapper.DataTemplateMapper;
 import uk.gov.ccs.model.agreements.DataTemplate;
 import uk.gov.ccs.repo.QuestionRepository;
-import java.net.InetAddress;
-import org.springframework.web.client.RestTemplate;
 
+import java.net.InetAddress;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,15 +22,10 @@ import java.util.List;
  * Service to handle question-related business logic
  */
 @Service
-public class QuestionService {
-
-    private static final Logger log = LoggerFactory.getLogger(QuestionService.class);
+public class QuestionService extends BaseService {
 
     @Autowired
     private QuestionRepository questionRepository;
-
-    @Autowired
-    private Rollbar rollbar;
 
     @Autowired
     private AgreementsClient agreementsClient;
@@ -44,8 +35,6 @@ public class QuestionService {
     
     @Value("${external-services.agreements-service.api-key}")
     private String agreementServiceApiKey;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * Save questions from the provided payload directly to the database.

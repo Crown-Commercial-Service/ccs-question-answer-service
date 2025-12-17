@@ -1,32 +1,25 @@
 package uk.gov.ccs.mapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rollbar.notifier.Rollbar;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.ccs.entity.DefaultQuestions;
 import uk.gov.ccs.model.agreements.DataTemplate;
-import uk.gov.ccs.model.agreements.Dependency;
 import uk.gov.ccs.model.agreements.Requirement;
 import uk.gov.ccs.model.agreements.RequirementGroup;
 import uk.gov.ccs.model.agreements.TemplateCriteria;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Mapper to convert hierarchical DataTemplate structure to flat DefaultQuestions entities
  * This is the reverse of DefaultQuestionsToDataTemplateMapper
  */
 @Component
-public class DataTemplateToDefaultQuestionsMapper {
-    
-    @Autowired
-    private Rollbar rollbar;
-    
-    private final ObjectMapper objectMapper = new ObjectMapper();
+public class DataTemplateToDefaultQuestionsMapper extends BaseMapper {
     
     /**
      * Convert hierarchical DataTemplate list to flat DefaultQuestions entities
@@ -38,166 +31,133 @@ public class DataTemplateToDefaultQuestionsMapper {
      */
     public List<DefaultQuestions> mapToDefaultQuestions(
             List<DataTemplate> dataTemplates, String agreementId, String lotId) {
-        
-        List<DefaultQuestions> defaultQuestions = new ArrayList<>();
-        
+
         if (dataTemplates == null || dataTemplates.isEmpty()) {
-            return defaultQuestions;
+            return Collections.emptyList();
         }
-        
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-        
+
+        final Timestamp now = new Timestamp(System.currentTimeMillis());
+
         try {
-            for (DataTemplate dataTemplate : dataTemplates) {
-                if (dataTemplate.getCriteria() != null) {
-                    for (TemplateCriteria criteria : dataTemplate.getCriteria()) {
-                        List<DefaultQuestions> criteriaQuestions = mapCriteriaToDefaultQuestions(
-                            criteria, agreementId, lotId, now);
-                        defaultQuestions.addAll(criteriaQuestions);
-                    }
-                }
-            }
+            return dataTemplates.stream()
+                    .filter(dt -> dt.getCriteria() != null)
+                    .flatMap(dt -> dt.getCriteria().stream())
+                    // Flatten TemplateCriteria to RequirementGroup, passing criteria along
+                    .filter(criteria -> criteria.getRequirementGroups() != null)
+                    .flatMap(criteria -> criteria.getRequirementGroups().stream()
+                            .map(rg -> new Object[] { criteria, rg }))
+                    // Flatten RequirementGroup to Requirement, passing criteria and group along
+                    .filter(arr -> {
+                        RequirementGroup rg = (RequirementGroup) arr[1];
+                        return rg.getOcds() != null && rg.getOcds().getRequirements() != null;
+                    })
+                    .flatMap(arr -> {
+                        TemplateCriteria criteria = (TemplateCriteria) arr[0];
+                        RequirementGroup rg = (RequirementGroup) arr[1];
+                        return rg.getOcds().getRequirements().stream()
+                                .map(req -> new Object[] { criteria, rg, req }); // Pass all ancestors
+                    })
+
+                    // Map the triplet (Criteria, Group, Requirement) to the final entity
+                    .map(arr -> {
+                        TemplateCriteria criteria = (TemplateCriteria) arr[0];
+                        RequirementGroup rg = (RequirementGroup) arr[1];
+                        Requirement req = (Requirement) arr[2];
+                        return buildDefaultQuestion(criteria, rg, req, agreementId, lotId, now);
+                    })
+
+                    // Filter out any null entities (which indicates an internal build error/warning)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
         } catch (Exception ex) {
+            log.error("Error mapping DataTemplate to DefaultQuestions, error{}", ex.getMessage());
             rollbar.error(ex, "Error mapping DataTemplate to DefaultQuestions");
+            return Collections.emptyList();
         }
-        
-        return defaultQuestions;
     }
-    
+
     /**
-     * Map TemplateCriteria to list of DefaultQuestions
-     */
-    private List<DefaultQuestions> mapCriteriaToDefaultQuestions(
-            TemplateCriteria criteria, String agreementId, String lotId, Timestamp now) {
-        
-        List<DefaultQuestions> questions = new ArrayList<>();
-        
-        if (criteria.getRequirementGroups() == null) {
-            return questions;
-        }
-        
-        for (RequirementGroup requirementGroup : criteria.getRequirementGroups()) {
-            List<DefaultQuestions> groupQuestions = mapRequirementGroupToDefaultQuestions(
-                criteria, requirementGroup, agreementId, lotId, now);
-            questions.addAll(groupQuestions);
-        }
-        
-        return questions;
-    }
-    
-    /**
-     * Map RequirementGroup to list of DefaultQuestions
-     */
-    private List<DefaultQuestions> mapRequirementGroupToDefaultQuestions(
-            TemplateCriteria criteria, RequirementGroup requirementGroup,
-            String agreementId, String lotId, Timestamp now) {
-        
-        List<DefaultQuestions> questions = new ArrayList<>();
-        
-        if (requirementGroup.getOcds() == null || 
-            requirementGroup.getOcds().getRequirements() == null) {
-            return questions;
-        }
-        
-        RequirementGroup.OCDS ocds = requirementGroup.getOcds();
-        RequirementGroup.NonOCDS nonOCDS = requirementGroup.getNonOCDS();
-        
-        for (Requirement requirement : ocds.getRequirements()) {
-            DefaultQuestions defaultQuestion = buildDefaultQuestion(
-                criteria, requirementGroup, requirement, agreementId, lotId, now);
-            if (defaultQuestion != null) {
-                questions.add(defaultQuestion);
-            }
-        }
-        
-        return questions;
-    }
-    
-    /**
-     * Build a single DefaultQuestions entity from the hierarchical structure
+     * Build default question
      */
     private DefaultQuestions buildDefaultQuestion(
             TemplateCriteria criteria, RequirementGroup requirementGroup,
             Requirement requirement, String agreementId, String lotId, Timestamp now) {
-        
+
         try {
             Requirement.OCDS ocds = requirement.getOcds();
             Requirement.NonOCDS nonOCDS = requirement.getNonOCDS();
             RequirementGroup.OCDS groupOcds = requirementGroup.getOcds();
             RequirementGroup.NonOCDS groupNonOCDS = requirementGroup.getNonOCDS();
-            
+
             // Build dependency JSON string if exists
             String dependencyJson = null;
             if (nonOCDS != null && nonOCDS.getDependency() != null) {
                 try {
                     dependencyJson = objectMapper.writeValueAsString(nonOCDS.getDependency());
                 } catch (JsonProcessingException e) {
+                    log.error("Error serializing dependency to JSON. error {}", e.getMessage());
                     rollbar.warning("Error serializing dependency to JSON: " + e.getMessage());
                 }
             }
-            
+
             // Helper to safely get title with fallback
-            String questionTitle = null;
-            if (ocds != null) {
-                questionTitle = ocds.getTitle();
-            }
+            String questionTitle = (ocds != null ? ocds.getTitle() : null);
             if (questionTitle == null || questionTitle.trim().isEmpty()) {
                 // Use question ID as fallback if title is missing
                 questionTitle = (ocds != null && ocds.getId() != null) ? ocds.getId() : "Untitled Question";
             }
-            
+
             // Helper to safely get description with fallback
-            String questionDescription = null;
-            if (ocds != null) {
-                questionDescription = ocds.getDescription();
-            }
+            String questionDescription = (ocds != null ? ocds.getDescription() : null);
             if (questionDescription == null || questionDescription.trim().isEmpty()) {
                 questionDescription = questionTitle; // Use title as fallback for description
             }
-            
+
             // Helper to safely get group_task with fallback
-            String groupTask = null;
-            if (groupNonOCDS != null) {
-                groupTask = groupNonOCDS.getTask();
-            }
+            String groupTask = (groupNonOCDS != null ? groupNonOCDS.getTask() : null);
             if (groupTask == null || groupTask.trim().isEmpty()) {
-                // Use group description as fallback, or group ID, or a default value
+                // Fallback 1: Group OCDS Description
                 if (groupOcds != null && groupOcds.getDescription() != null && !groupOcds.getDescription().trim().isEmpty()) {
                     groupTask = groupOcds.getDescription();
+                    // Fallback 2: Group OCDS ID
                 } else if (groupOcds != null && groupOcds.getId() != null) {
                     groupTask = groupOcds.getId();
+                    // Fallback 3: Default string
                 } else {
                     groupTask = "Default Task";
                 }
             }
-            
+
             DefaultQuestions.DefaultQuestionsBuilder builder = DefaultQuestions.builder()
-                .agreementId(agreementId)
-                .lotId(lotId)
-                .criteriaId(criteria.getId())
-                .criterionTitle(criteria.getTitle())
-                .groupId(groupOcds != null ? groupOcds.getId() : null)
-                .groupDescription(groupOcds != null ? groupOcds.getDescription() : null)
-                .groupTask(groupTask)
-                .groupOrder(groupNonOCDS != null ? groupNonOCDS.getOrder() : null)
-                .groupPrompt(groupNonOCDS != null ? groupNonOCDS.getPrompt() : null)
-                .groupMandatory(groupNonOCDS != null ? groupNonOCDS.getMandatory() : null)
-                .questionId(ocds != null ? ocds.getId() : null)
-                .questionTitle(questionTitle)
-                .questionDescription(questionDescription)
-                .questionDataType(ocds != null ? ocds.getDataType() : null)
-                .questionOrder(nonOCDS != null ? nonOCDS.getOrder() : null)
-                .questionAnswered(nonOCDS != null && nonOCDS.getAnswered() != null ? nonOCDS.getAnswered() : false)
-                .questionMandatory(nonOCDS != null ? nonOCDS.getMandatory() : null)
-                .questionDependency(dependencyJson)
-                .questionMultiAnswer(nonOCDS != null ? nonOCDS.getMultiAnswer() : null)
-                .questionType(nonOCDS != null ? nonOCDS.getQuestionType() : null)
-                .createdAt(now)
-                .updatedAt(now);
-            
+                    .agreementId(agreementId)
+                    .lotId(lotId)
+                    .criteriaId(criteria.getId())
+                    .criterionTitle(criteria.getTitle())
+                    .groupId(groupOcds != null ? groupOcds.getId() : null)
+                    .groupDescription(groupOcds != null ? groupOcds.getDescription() : null)
+                    .groupTask(groupTask)
+                    .groupOrder(groupNonOCDS != null ? groupNonOCDS.getOrder() : null)
+                    .groupPrompt(groupNonOCDS != null ? groupNonOCDS.getPrompt() : null)
+                    .groupMandatory(groupNonOCDS != null ? groupNonOCDS.getMandatory() : null)
+                    .questionId(ocds != null ? ocds.getId() : null)
+                    .questionTitle(questionTitle)
+                    .questionDescription(questionDescription)
+                    .questionDataType(ocds != null ? ocds.getDataType() : null)
+                    .questionOrder(nonOCDS != null ? nonOCDS.getOrder() : null)
+                    // Default to false if Answered is not present
+                    .questionAnswered(nonOCDS != null && nonOCDS.getAnswered() != null ? nonOCDS.getAnswered() : false)
+                    .questionMandatory(nonOCDS != null ? nonOCDS.getMandatory() : null)
+                    .questionDependency(dependencyJson)
+                    .questionMultiAnswer(nonOCDS != null ? nonOCDS.getMultiAnswer() : null)
+                    .questionType(nonOCDS != null ? nonOCDS.getQuestionType() : null)
+                    .createdAt(now)
+                    .updatedAt(now);
+
             return builder.build();
-            
+
         } catch (Exception ex) {
+            log.error("Error building DefaultQuestion. error {}", ex.getMessage());
             rollbar.warning("Error building DefaultQuestion: " + ex.getMessage());
             return null;
         }

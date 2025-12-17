@@ -231,38 +231,38 @@ public class QuestionController extends BaseController {
             @PathVariable("agreement-id") String agreementId,
             @PathVariable("lot-id") String lotId,
             @RequestBody List<DataTemplate> dataTemplates) {
-        
-        log.debug("POST /questions/agreements/{}/lots/{}/load-default-questions - " +
-                "Loading default questions for agreementId: {}, lotId: {}", 
-                agreementId, lotId, agreementId, lotId);
+
+        // Define the context string once for cleaner logging
+        final String context = String.format("agreementId: %s, lotId: %s", agreementId, lotId);
+        final String endpointPath = String.format("/agreements/%s/lots/%s/load-default-questions", agreementId, lotId);
+
+        log.debug("POST /questions{} - Loading default questions for {}", endpointPath, context);
         
         try {
             if (dataTemplates == null || dataTemplates.isEmpty()) {
-                log.warn("No data templates provided in request body for agreement: {}, lot: {}", 
-                    agreementId, lotId);
+                log.warn("No data templates provided in request body for {}", context);
                 return ResponseEntity.badRequest()
-                    .body("Request body must contain a non-empty array of DataTemplate objects");
+                        .body("Request body must contain a non-empty array of DataTemplate objects");
             }
             
             int count = questionLogicClient.loadDefaultQuestions(
                 dataTemplates, agreementId, lotId);
             
             if (count == 0) {
-                log.warn("No default questions loaded for agreement: {}, lot: {}", agreementId, lotId);
-                return ResponseEntity.ok("No default questions found or loaded. Count: 0");
+                log.warn("No default questions loaded for {}", context);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(String.format("No default questions were found or loaded for %s.", context));
             }
-            
-            log.info("Successfully loaded {} default questions for agreement: {}, lot: {}", 
-                count, agreementId, lotId);
-            return ResponseEntity.ok("Successfully loaded " + count + " default questions");
+
+            log.debug("Successfully loaded {} default questions for {}", count, context);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully loaded and created " + count + " default questions");
             
         } catch (Exception ex) {
-            log.error("Error loading default questions for agreement: {}, lot: {}", 
-                agreementId, lotId, ex);
-            rollbar.error(ex, "Error loading default questions for agreement: " + agreementId + 
-                ", lot: " + lotId);
+            String errorMsg = String.format("Error loading default questions for %s", context);
+            log.error(errorMsg, ex);
+            rollbar.error(ex, errorMsg);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error loading default questions: " + ex.getMessage());
+                    .body("Error loading default questions: " + ex.getMessage());
         }
     }
 }
