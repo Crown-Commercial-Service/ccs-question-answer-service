@@ -12,7 +12,6 @@ import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
 import uk.gov.ccs.entity.Questions;
 import uk.gov.ccs.exceptions.ResourceNotFoundException;
 import uk.gov.ccs.model.agreements.DataTemplate;
-import uk.gov.ccs.services.TemplateDataService;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -196,6 +195,74 @@ public class QuestionController extends BaseController {
         } catch (Exception ex) {
             log.error("DELETE /questions - Error deleting questions. eventId: {}, questionId: {}", eventId, questionId, ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    /**
+     * POST endpoint to load default questions from JSON request body
+     * 
+     * Accepts a list of DataTemplate objects in the request body containing all criteria
+     * (Criterion 1, Criterion 2, Criterion 3, etc.) and inserts them into the default_questions table.
+     * 
+     * The JSON should be in the format:
+     * [
+     *   {
+     *     "id": 17,
+     *     "templateName": "FC-DOS7-Lot1",
+     *     "mandatory": false,
+     *     "criteria": [
+     *       {
+     *         "id": "Criterion 1",
+     *         "title": "...",
+     *         "requirementGroups": [...]
+     *       },
+     *       ...
+     *     ]
+     *   }
+     * ]
+     * 
+     * @param agreementId The agreement ID (e.g., "RM1043.9")
+     * @param lotId The lot ID (e.g., "1")
+     * @param dataTemplates List of DataTemplate objects from request body
+     * @return HTTP 200 with count of questions loaded, or 500 on error
+     */
+    @PostMapping("/agreements/{agreement-id}/lots/{lot-id}/load-default-questions")
+    public ResponseEntity<String> loadDefaultQuestions(
+            @PathVariable("agreement-id") String agreementId,
+            @PathVariable("lot-id") String lotId,
+            @RequestBody List<DataTemplate> dataTemplates) {
+
+        // Define the context string once for cleaner logging
+        final String context = String.format("agreementId: %s, lotId: %s", agreementId, lotId);
+        final String endpointPath = String.format("/agreements/%s/lots/%s/load-default-questions", agreementId, lotId);
+
+        log.debug("POST /questions{} - Loading default questions for {}", endpointPath, context);
+        
+        try {
+            if (dataTemplates == null || dataTemplates.isEmpty()) {
+                log.warn("No data templates provided in request body for {}", context);
+                return ResponseEntity.badRequest()
+                        .body("Request body must contain a non-empty array of DataTemplate objects");
+            }
+            
+            int count = questionLogicClient.loadDefaultQuestions(
+                dataTemplates, agreementId, lotId);
+            
+            if (count == 0) {
+                log.warn("No default questions loaded for {}", context);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(String.format("No default questions were found or loaded for %s.", context));
+            }
+
+            log.debug("Successfully loaded {} default questions for {}", count, context);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully loaded and created " + count + " default questions");
+            
+        } catch (Exception ex) {
+            String errorMsg = String.format("Error loading default questions for %s", context);
+            log.error(errorMsg, ex);
+            rollbar.error(ex, errorMsg);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error loading default questions: " + ex.getMessage());
         }
     }
 }

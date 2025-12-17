@@ -11,6 +11,7 @@ import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
 import uk.gov.ccs.entity.Questions;
 import uk.gov.ccs.model.agreements.DataTemplate;
+import uk.gov.ccs.services.DefaultQuestionsLoaderService;
 import uk.gov.ccs.services.QuestionService;
 import uk.gov.ccs.services.TemplateDataService;
 
@@ -30,6 +31,9 @@ public class QuestionLogicClient {
 
     @Autowired
     private TemplateDataService templateDataService;
+
+    @Autowired
+    private DefaultQuestionsLoaderService defaultQuestionsLoaderService;
 
     @Autowired
     private Rollbar rollbar;
@@ -127,6 +131,32 @@ public class QuestionLogicClient {
         } catch (Exception ex) {
             rollbar.error(ex, "Error getting event data templates for agreement: " + agreementId + 
                 ", lot: " + lotId + ", eventType: " + eventType);
+            throw ex;
+        }
+    }
+
+    /**
+     * Load default questions from JSON request body into the default_questions table.
+     * 
+     * Accepts a list of DataTemplate objects containing all criteria (Criterion 1, Criterion 2, Criterion 3, etc.)
+     * and inserts them into the default_questions table for the specified agreement and lot.
+     * 
+     * @param dataTemplates List of DataTemplate objects from request body
+     * @param agreementId The agreement ID (e.g., "RM1043.9")
+     * @param lotId The lot ID (e.g., "1")
+     * @return Number of questions loaded
+     */
+    public int loadDefaultQuestions(List<DataTemplate> dataTemplates, String agreementId, String lotId) {
+        try {
+            if (dataTemplates == null || dataTemplates.isEmpty()) {
+                log.warn("No data templates provided for agreement: {}, lot: {}", agreementId, lotId);
+                return 0;
+            }
+            
+            return defaultQuestionsLoaderService.loadDefaultQuestionsFromBody(dataTemplates, agreementId, lotId);
+        } catch (Exception ex) {
+            rollbar.error(ex, "Error loading default questions for agreement: " + agreementId + 
+                ", lot: " + lotId);
             throw ex;
         }
     }

@@ -1,16 +1,9 @@
 package uk.gov.ccs.mapper;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rollbar.notifier.Rollbar;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.ccs.entity.Questions;
-import uk.gov.ccs.model.agreements.DataTemplate;
-import uk.gov.ccs.model.agreements.Dependency;
-import uk.gov.ccs.model.agreements.Requirement;
-import uk.gov.ccs.model.agreements.RequirementGroup;
-import uk.gov.ccs.model.agreements.TemplateCriteria;
+import uk.gov.ccs.model.agreements.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,12 +13,7 @@ import java.util.stream.Collectors;
  * Returns the same format as agreements-service
  */
 @Component
-public class QuestionsToDataTemplateMapper {
-    
-    @Autowired
-    private Rollbar rollbar;
-    
-    private final ObjectMapper objectMapper = new ObjectMapper();
+public class QuestionsToDataTemplateMapper extends BaseMapper {
     
     /**
      * Convert flat Questions list to hierarchical DataTemplate structure
@@ -103,6 +91,7 @@ public class QuestionsToDataTemplateMapper {
             
             return dataTemplates;
         } catch (Exception ex) {
+            log.error("Error mapping Questions to DataTemplate. error {}", ex.getMessage());
             rollbar.error(ex, "Error mapping Questions to DataTemplate");
             return Collections.emptyList();
         }
@@ -187,6 +176,7 @@ public class QuestionsToDataTemplateMapper {
                     // Map to Dependency object
                     dependency = mapDependency(dependencyMap);
                 } catch (Exception ex) {
+                    log.error("Error parsing question dependency. error {}", ex.getMessage());
                     rollbar.warning("Error parsing question dependency: " + ex.getMessage());
                 }
             }
@@ -199,20 +189,8 @@ public class QuestionsToDataTemplateMapper {
                 .nonOCDS(nonOCDS)
                 .build();
         } catch (Exception ex) {
+            log.error("Error building Requirement from Questions. error {}", ex.getMessage());
             rollbar.warning("Error building Requirement from Questions: " + ex.getMessage());
-            return null;
-        }
-    }
-    
-    /**
-     * Map dependency JSON to Dependency object
-     */
-    private Dependency mapDependency(Map<String, Object> dependencyMap) {
-        try {
-            // Convert Map to Dependency using ObjectMapper
-            return objectMapper.convertValue(dependencyMap, Dependency.class);
-        } catch (Exception ex) {
-            rollbar.warning("Error mapping dependency: " + ex.getMessage());
             return null;
         }
     }

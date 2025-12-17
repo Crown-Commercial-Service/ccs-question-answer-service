@@ -17,6 +17,7 @@ import uk.gov.ccs.config.SecurityConfig;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
 import uk.gov.ccs.entity.Questions;
+import uk.gov.ccs.services.QuestionService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +41,9 @@ class QuestionControllerTest {
     private static final String BASE_URL = "/questions";
     private static final String TEST_EVENT_ID = "TEST_12344_OCD";
     private static final String TEST_QUESTION_ID = "question 2";
+    private static final String TEST_AGREEMENT_ID = "AGR_1234";
+    private static final String TEST_LOT_ID = "LOT_5678";
+    private final String LOAD_DEFAULTS_URL = BASE_URL + "/agreements/{agreement-id}/lots/{lot-id}/load-default-questions";
 
     @Autowired
     private MockMvc mockMvc;
@@ -55,6 +59,9 @@ class QuestionControllerTest {
 
     @MockBean
     private QuestionLogicClient questionLogicClient;
+
+    @MockBean
+    private QuestionService questionService;
 
     @Test
     void getQuestions_shouldReturnListOfQuestions_whenDataIsFound() throws Exception {
@@ -200,6 +207,31 @@ class QuestionControllerTest {
         q.setIsDefaultQuestion(false);
         return q;
     }
+
+    // Helper methods for POST tests
+
+    private QuestionWrite givenQuestionWrite() {
+        QuestionWrite questionWrite = new QuestionWrite();
+        questionWrite.setEventId("test-event-123");
+        questionWrite.setAgreementId("RM1043.8");
+        questionWrite.setLotId("1");
+        questionWrite.setCriterion(new ArrayList<>());
+        return questionWrite;
+    }
+
+    private QuestionWriteResponse givenQuestionWriteResponse() {
+        QuestionWriteResponse response = new QuestionWriteResponse();
+        response.setId(1L);
+        response.setEventId("test-event-123");
+        response.setAgreementId("RM1043.8");
+        response.setLotId("1");
+        return response;
+    }
+
+    /**
+     * Mock DTO for the DataTemplate in the request body used by the new POST endpoint.
+     */
+    record MockDataTemplate(String templateName, String version) {}
 
     // POST endpoint tests
 
@@ -505,23 +537,105 @@ class QuestionControllerTest {
                 .error(argThat((String message) -> message.contains(expectedLogMessage)));
     }
 
-    // Helper methods for POST tests
+    @Test
+    void loadDefaultQuestionsShouldReturn201AndCountWhenSuccessful() throws Exception {
+        // Arrange
+        final int successfullyLoadedCount = 5;
+        List<MockDataTemplate> mockTemplates = List.of(new MockDataTemplate("Template1", "V1"));
 
-    private QuestionWrite givenQuestionWrite() {
-        QuestionWrite questionWrite = new QuestionWrite();
-        questionWrite.setEventId("test-event-123");
-        questionWrite.setAgreementId("RM1043.8");
-        questionWrite.setLotId("1");
-        questionWrite.setCriterion(new ArrayList<>());
-        return questionWrite;
+        when(questionLogicClient.loadDefaultQuestions(
+                any(),
+                eq(TEST_AGREEMENT_ID),
+                eq(TEST_LOT_ID)))
+                .thenReturn(successfullyLoadedCount);
+
+        // Act & Assert
+        mockMvc.perform(post(LOAD_DEFAULTS_URL, TEST_AGREEMENT_ID, TEST_LOT_ID)
+                        .with(user("authorizedUser").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(mockTemplates)))
+                .andExpect(status().isCreated())
+                .andExpect(content().string("Successfully loaded and created " + successfullyLoadedCount + " default questions"));
+
+        // Verify the logic client was called
+        org.mockito.Mockito.verify(questionLogicClient, times(1))
+                .loadDefaultQuestions(any(), eq(TEST_AGREEMENT_ID), eq(TEST_LOT_ID));
     }
 
-    private QuestionWriteResponse givenQuestionWriteResponse() {
-        QuestionWriteResponse response = new QuestionWriteResponse();
-        response.setId(1L);
-        response.setEventId("test-event-123");
-        response.setAgreementId("RM1043.8");
-        response.setLotId("1");
-        return response;
+    @Test
+    void loadDefaultQuestionsShouldReturn400BadRequestWhenEmptyBody() throws Exception {
+        // Arrange
+        List<MockDataTemplate> emptyTemplates = Collections.emptyList();
+
+        // Act & Assert
+        mockMvc.perform(post(LOAD_DEFAULTS_URL, TEST_AGREEMENT_ID, TEST_LOT_ID)
+                        .with(user("authorizedUser").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(emptyTemplates)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Request body must contain a non-empty array of DataTemplate objects"));
+
+        // Verify the logic client was NOT called
+        org.mockito.Mockito.verify(questionLogicClient, times(0))
+                .loadDefaultQuestions(any(), anyString(), anyString());
+        // Verify Rollbar was NOT called
+        org.mockito.Mockito.verify(rollbar, times(0)).error(any(Throwable.class), anyString());
+    }
+
+    @Test
+    void loadDefaultQuestionsShouldReturn404AndZeroCountWhenNoQuestionsFound() throws Exception {
+        // Arrange
+        final int zeroCount = 0;
+        List<MockDataTemplate> mockTemplates = List.of(new MockDataTemplate("Template2", "V1"));
+
+        when(questionLogicClient.loadDefaultQuestions(
+                any(),
+                eq(TEST_AGREEMENT_ID),
+                eq(TEST_LOT_ID)))
+                .thenReturn(zeroCount);
+
+        // Act & Assert
+        mockMvc.perform(post(LOAD_DEFAULTS_URL, TEST_AGREEMENT_ID, TEST_LOT_ID)
+                        .with(user("authorizedUser").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(mockTemplates)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("No default questions were found or loaded for agreementId: " +
+                        TEST_AGREEMENT_ID + ", lotId: " + TEST_LOT_ID + "."));
+
+        // Verify the logic client was called
+        org.mockito.Mockito.verify(questionLogicClient, times(1))
+                .loadDefaultQuestions(any(), eq(TEST_AGREEMENT_ID), eq(TEST_LOT_ID));
+    }
+
+    @Test
+    void loadDefaultQuestionsShouldReturn500AndLogRollbarErrorWhenServiceThrowsException() throws Exception {
+        // Arrange
+        final String expectedErrorMessage = "Database connection failed";
+        List<MockDataTemplate> mockTemplates = List.of(new MockDataTemplate("Template3", "V1"));
+
+        // Mock the logic client to throw an exception
+        when(questionLogicClient.loadDefaultQuestions(
+                any(),
+                eq(TEST_AGREEMENT_ID),
+                eq(TEST_LOT_ID)))
+                .thenThrow(new RuntimeException(expectedErrorMessage)); // Throw a runtime exception
+
+        // Act & Assert
+        mockMvc.perform(post(LOAD_DEFAULTS_URL, TEST_AGREEMENT_ID, TEST_LOT_ID)
+                        .with(user("authorizedUser").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(mockTemplates)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string("Error loading default questions: " + expectedErrorMessage));
+
+        // Verify Rollbar logging occurred exactly once
+        org.mockito.Mockito.verify(rollbar, times(1)).error(any(Throwable.class), anyString());
+
+        // Assert captured Rollbar message contains the context
+        org.mockito.Mockito.verify(rollbar, times(1))
+                .error(any(Throwable.class), argThat(
+                        (String message) -> message.contains(TEST_AGREEMENT_ID) && message.contains(TEST_LOT_ID)
+                ));
     }
 }
