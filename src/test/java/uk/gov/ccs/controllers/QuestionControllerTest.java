@@ -294,7 +294,7 @@ class QuestionControllerTest {
                         .with(user("test"))
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(questionWrite)))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isAccepted());
 
         verify(questionLogicClient, times(1))
                 .createOrUpdateQuestions(eq(questionWrite), isNull());
