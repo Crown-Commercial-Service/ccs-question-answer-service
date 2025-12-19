@@ -28,8 +28,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static uk.gov.ccs.constants.Constants.responses_Success;
 
 @WebMvcTest(QuestionController.class)
@@ -64,7 +63,7 @@ class QuestionControllerTest {
     private QuestionService questionService;
 
     @Test
-    void getQuestions_shouldReturnListOfQuestions_whenDataIsFound() throws Exception {
+    void getQuestionsShouldReturnListOfQuestionsWhenDataIsFound() throws Exception {
         // Arrange
         Questions question1 = givenQuestion();
         Questions question2 = givenQuestion();
@@ -83,7 +82,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void getQuestions_shouldReturnEmptyList_whenNoQuestionsAreFound() throws Exception {
+    void getQuestionsShouldReturnEmptyListWhenNoQuestionsAreFound() throws Exception {
         // Arrange
         final String emptyEventId = "EVENT_NO_QUESTIONS";
 
@@ -101,7 +100,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void getQuestions_shouldCallServiceWithCorrectEventId() throws Exception {
+    void getQuestionsShouldCallServiceWithCorrectEventId() throws Exception {
         // Arrange
         final String expectedEventId = "ABC-123";
 
@@ -121,7 +120,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void getQuestions_shouldAllowAuthenticatedRequests() throws Exception {
+    void getQuestionsShouldAllowAuthenticatedRequests() throws Exception {
         // Arrange
         final String eventId = "EVENT_UNAUTH";
         
@@ -144,7 +143,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void getQuestions_shouldNotAllowUnauthenticatedRequests() throws Exception {
+    void getQuestionsShouldNotAllowUnauthenticatedRequests() throws Exception {
         // Arrange
         final String eventId = "EVENT_UNAUTH";
         
@@ -161,7 +160,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void getQuestions_shouldBeAuthorizedWithSpecificRole() throws Exception {
+    void getQuestionsShouldBeAuthorizedWithSpecificRole() throws Exception {
         // Arrange
         final String eventId = "EVENT_AUTH";
 
@@ -236,7 +235,7 @@ class QuestionControllerTest {
     // POST endpoint tests
 
     @Test
-    void createQuestions_shouldReturn200_whenValidRequestAndResponseExists() throws Exception {
+    void createQuestionsShouldReturn200_whenValidRequestAndResponseExists() throws Exception {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
         QuestionWriteResponse response = givenQuestionWriteResponse();
@@ -258,7 +257,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void createQuestions_shouldReturn200_whenValidRequestWithEventType() throws Exception {
+    void createQuestionsShouldReturn200_whenValidRequestWithEventType() throws Exception {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
         QuestionWriteResponse response = givenQuestionWriteResponse();
@@ -282,7 +281,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void createQuestions_shouldReturn204_whenNoTemplateDataExists() throws Exception {
+    void createQuestionsShouldReturn204_whenNoTemplateDataExists() throws Exception {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
         
@@ -301,7 +300,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void createQuestions_shouldReturn400_whenRequestBodyIsNull() throws Exception {
+    void createQuestionsShouldReturn400_whenRequestBodyIsNull() throws Exception {
         // Act & Assert
         mockMvc.perform(post(BASE_URL)
                         .with(user("test"))
@@ -313,7 +312,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void createQuestions_shouldReturn400_whenEventIdIsNull() throws Exception {
+    void createQuestionsShouldReturn400_whenEventIdIsNull() throws Exception {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
         questionWrite.setEventId(null);
@@ -330,7 +329,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void createQuestions_shouldReturn400_whenEventIdIsEmpty() throws Exception {
+    void createQuestionsShouldReturn400_whenEventIdIsEmpty() throws Exception {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
         questionWrite.setEventId("   ");
@@ -347,7 +346,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void createQuestions_shouldReturn400_whenAgreementIdIsNull() throws Exception {
+    void createQuestionsShouldReturn400_whenAgreementIdIsNull() throws Exception {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
         questionWrite.setAgreementId(null);
@@ -364,7 +363,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void createQuestions_shouldReturn400_whenAgreementIdIsEmpty() throws Exception {
+    void createQuestionsShouldReturn400_whenAgreementIdIsEmpty() throws Exception {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
         questionWrite.setAgreementId("   ");
@@ -381,7 +380,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void createQuestions_shouldReturn400_whenLotIdIsNull() throws Exception {
+    void createQuestionsShouldReturn400_whenLotIdIsNull() throws Exception {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
         questionWrite.setLotId(null);
@@ -398,7 +397,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void createQuestions_shouldReturn400_whenLotIdIsEmpty() throws Exception {
+    void createQuestionsShouldReturn400_whenLotIdIsEmpty() throws Exception {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
         questionWrite.setLotId("   ");
@@ -415,7 +414,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void createQuestions_shouldReturn400_whenIllegalArgumentExceptionThrown() throws Exception {
+    void createQuestionsShouldReturn400_whenIllegalArgumentExceptionThrown() throws Exception {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
         
@@ -434,7 +433,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void createQuestions_shouldReturn500_whenUnexpectedExceptionThrown() throws Exception {
+    void createQuestionsShouldReturn500_whenUnexpectedExceptionThrown() throws Exception {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
         
@@ -453,7 +452,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void createQuestions_shouldAllowAuthenticatedRequests() throws Exception {
+    void createQuestionsShouldAllowAuthenticatedRequests() throws Exception {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
         QuestionWriteResponse response = givenQuestionWriteResponse();
@@ -474,7 +473,7 @@ class QuestionControllerTest {
     }
 
     @Test
-    void createQuestions_shouldNotAllowUnauthenticatedRequests() throws Exception {
+    void createQuestionsShouldNotAllowUnauthenticatedRequests() throws Exception {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
         QuestionWriteResponse response = givenQuestionWriteResponse();
@@ -502,11 +501,11 @@ class QuestionControllerTest {
                 .andExpect(content().string(responses_Success));
 
         // Verify the logic client was called
-        org.mockito.Mockito.verify(questionLogicClient, times(1))
+        verify(questionLogicClient, times(1))
                 .deleteQuestion(eq(TEST_EVENT_ID), eq(TEST_QUESTION_ID));
 
         // Verify Rollbar was NOT called on success
-        org.mockito.Mockito.verify(rollbar, times(0)).error(anyString());
+        verify(rollbar, times(0)).error(anyString());
     }
 
     @Test
@@ -558,7 +557,7 @@ class QuestionControllerTest {
                 .andExpect(content().string("Successfully loaded and created " + successfullyLoadedCount + " default questions"));
 
         // Verify the logic client was called
-        org.mockito.Mockito.verify(questionLogicClient, times(1))
+        verify(questionLogicClient, times(1))
                 .loadDefaultQuestions(any(), eq(TEST_AGREEMENT_ID), eq(TEST_LOT_ID));
     }
 
@@ -576,10 +575,10 @@ class QuestionControllerTest {
                 .andExpect(content().string("Request body must contain a non-empty array of DataTemplate objects"));
 
         // Verify the logic client was NOT called
-        org.mockito.Mockito.verify(questionLogicClient, times(0))
+        verify(questionLogicClient, times(0))
                 .loadDefaultQuestions(any(), anyString(), anyString());
         // Verify Rollbar was NOT called
-        org.mockito.Mockito.verify(rollbar, times(0)).error(any(Throwable.class), anyString());
+        verify(rollbar, times(0)).error(any(Throwable.class), anyString());
     }
 
     @Test
@@ -604,7 +603,7 @@ class QuestionControllerTest {
                         TEST_AGREEMENT_ID + ", lotId: " + TEST_LOT_ID + "."));
 
         // Verify the logic client was called
-        org.mockito.Mockito.verify(questionLogicClient, times(1))
+        verify(questionLogicClient, times(1))
                 .loadDefaultQuestions(any(), eq(TEST_AGREEMENT_ID), eq(TEST_LOT_ID));
     }
 
@@ -630,12 +629,33 @@ class QuestionControllerTest {
                 .andExpect(content().string("Error loading default questions: " + expectedErrorMessage));
 
         // Verify Rollbar logging occurred exactly once
-        org.mockito.Mockito.verify(rollbar, times(1)).error(any(Throwable.class), anyString());
+        verify(rollbar, times(1)).error(any(Throwable.class), anyString());
 
         // Assert captured Rollbar message contains the context
-        org.mockito.Mockito.verify(rollbar, times(1))
+        verify(rollbar, times(1))
                 .error(any(Throwable.class), argThat(
                         (String message) -> message.contains(TEST_AGREEMENT_ID) && message.contains(TEST_LOT_ID)
                 ));
+    }
+
+    @Test
+    void whenRequestingMissingResourceThenReturnsGlobal404Json() throws Exception {
+
+        mockMvc.perform(get("/")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.timestamp").exists());
+    }
+
+    @Test
+    void whenRequestingMissingStaticFile_thenReturnsGlobal404Json() throws Exception {
+
+        mockMvc.perform(get("/"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.path").value("/"));
     }
 }
