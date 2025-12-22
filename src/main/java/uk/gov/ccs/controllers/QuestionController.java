@@ -141,7 +141,11 @@ public class QuestionController extends BaseController {
             if (response == null) {
                 log.debug("POST /questions - No template data found for agreement: {}, lot: {}, eventType: {}. No changes made.",
                         questionWrite.getAgreementId(), questionWrite.getLotId(), eventType);
-                return ResponseEntity.accepted().build();
+                return ResponseEntity.accepted().body(new QuestionWriteResponse()
+                        .agreementId(questionWrite.getAgreementId())
+                        .eventId(questionWrite.getEventId())
+                        .lotId(questionWrite.getLotId())
+                );
             }
 
             log.debug("POST /questions - Successfully created/updated questions for eventId: {}", questionWrite.getEventId());
