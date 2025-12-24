@@ -92,5 +92,17 @@ public class DefaultQuestions {
 
     @Column(name = "updated_at")
     Timestamp updatedAt;
+
+    @Column(name = "template_id")
+    Integer templateId;
+
+    @Column(name = "template_name")
+    String templateName;
+
+    @Column(name = "template_parent")
+    Integer templateParent;
+
+    @Column(name = "template_mandatory")
+    Boolean templateMandatory;
 }
 

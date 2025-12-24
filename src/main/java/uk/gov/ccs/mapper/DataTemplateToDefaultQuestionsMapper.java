@@ -40,33 +40,44 @@ public class DataTemplateToDefaultQuestionsMapper extends BaseMapper {
 
         try {
             return dataTemplates.stream()
+                    // Flatten DataTemplate to TemplateCriteria, keeping reference to parent DataTemplate
                     .filter(dt -> dt.getCriteria() != null)
-                    .flatMap(dt -> dt.getCriteria().stream())
-                    // Flatten TemplateCriteria to RequirementGroup, passing criteria along
-                    .filter(criteria -> criteria.getRequirementGroups() != null)
-                    .flatMap(criteria -> criteria.getRequirementGroups().stream()
-                            .map(rg -> new Object[] { criteria, rg }))
-                    // Flatten RequirementGroup to Requirement, passing criteria and group along
+                    .flatMap(dt -> dt.getCriteria().stream()
+                            .map(criteria -> new Object[] { dt, criteria }))
+
+                    // Flatten TemplateCriteria to RequirementGroup
                     .filter(arr -> {
-                        RequirementGroup rg = (RequirementGroup) arr[1];
+                        TemplateCriteria criteria = (TemplateCriteria) arr[1];
+                        return criteria.getRequirementGroups() != null;
+                    })
+                    .flatMap(arr -> {
+                        DataTemplate dt = (DataTemplate) arr[0];
+                        TemplateCriteria criteria = (TemplateCriteria) arr[1];
+                        return criteria.getRequirementGroups().stream()
+                                .map(rg -> new Object[] { dt, criteria, rg });
+                    })
+
+                    // Flatten RequirementGroup to Requirement
+                    .filter(arr -> {
+                        RequirementGroup rg = (RequirementGroup) arr[2];
                         return rg.getOcds() != null && rg.getOcds().getRequirements() != null;
                     })
                     .flatMap(arr -> {
-                        TemplateCriteria criteria = (TemplateCriteria) arr[0];
-                        RequirementGroup rg = (RequirementGroup) arr[1];
+                        DataTemplate dt = (DataTemplate) arr[0];
+                        TemplateCriteria criteria = (TemplateCriteria) arr[1];
+                        RequirementGroup rg = (RequirementGroup) arr[2];
                         return rg.getOcds().getRequirements().stream()
-                                .map(req -> new Object[] { criteria, rg, req }); // Pass all ancestors
+                                .map(req -> new Object[] { dt, criteria, rg, req });
                     })
 
-                    // Map the triplet (Criteria, Group, Requirement) to the final entity
+                    // Map the final quadruplet (Template, Criteria, Group, Requirement) to the final entity
                     .map(arr -> {
-                        TemplateCriteria criteria = (TemplateCriteria) arr[0];
-                        RequirementGroup rg = (RequirementGroup) arr[1];
-                        Requirement req = (Requirement) arr[2];
-                        return buildDefaultQuestion(criteria, rg, req, agreementId, lotId, now);
+                        DataTemplate dt = (DataTemplate) arr[0];
+                        TemplateCriteria criteria = (TemplateCriteria) arr[1];
+                        RequirementGroup rg = (RequirementGroup) arr[2];
+                        Requirement req = (Requirement) arr[3];
+                        return buildDefaultQuestion(dt, criteria, rg, req, agreementId, lotId, now);
                     })
-
-                    // Filter out any null entities (which indicates an internal build error/warning)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
@@ -81,6 +92,7 @@ public class DataTemplateToDefaultQuestionsMapper extends BaseMapper {
      * Build default question
      */
     private DefaultQuestions buildDefaultQuestion(
+            DataTemplate dt,
             TemplateCriteria criteria, RequirementGroup requirementGroup,
             Requirement requirement, String agreementId, String lotId, Timestamp now) {
 
@@ -152,7 +164,11 @@ public class DataTemplateToDefaultQuestionsMapper extends BaseMapper {
                     .questionMultiAnswer(nonOCDS != null ? nonOCDS.getMultiAnswer() : null)
                     .questionType(nonOCDS != null ? nonOCDS.getQuestionType() : null)
                     .createdAt(now)
-                    .updatedAt(now);
+                    .updatedAt(now)
+                    .templateId(dt.getId())
+                    .templateName(dt.getTemplateName())
+                    .templateMandatory(dt.getMandatory())
+                    .templateParent(dt.getParent()); // parent only available in DOS6
 
             return builder.build();
 
