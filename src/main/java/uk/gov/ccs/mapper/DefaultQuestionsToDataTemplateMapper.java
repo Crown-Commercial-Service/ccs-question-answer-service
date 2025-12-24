@@ -69,10 +69,10 @@ public class DefaultQuestionsToDataTemplateMapper extends BaseMapper {
 
                         // Build DataTemplate (wrapping the single criteria)
                         return DataTemplate.builder()
-                                .id(null)
-                                .templateName(null)
-                                .parent(null)
-                                .mandatory(null)
+                                .id(firstQuestion.getId())
+                                .templateName(firstQuestion.getTemplateName())
+                                .parent(firstQuestion.getTemplateParent())
+                                .mandatory(firstQuestion.getTemplateMandatory())
                                 .criteria(List.of(criteria))
                                 .build();
                     })
