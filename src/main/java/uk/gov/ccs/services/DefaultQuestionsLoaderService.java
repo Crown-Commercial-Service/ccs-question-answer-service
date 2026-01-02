@@ -33,7 +33,8 @@ public class DefaultQuestionsLoaderService extends BaseService{
      */
     @Transactional
     public int loadDefaultQuestionsFromBody(
-            List<DataTemplate> dataTemplates, String agreementId, String lotId) {
+            List<DataTemplate> dataTemplates, String agreementId,
+            String lotId, String eventType) {
 
         // Build the contextual string for logging
         final String context = String.format("agreement: %s, lot: %s", agreementId, lotId);
@@ -46,7 +47,7 @@ public class DefaultQuestionsLoaderService extends BaseService{
             
             // Convert to DefaultQuestions entities
             List<DefaultQuestions> defaultQuestions = mapper.mapToDefaultQuestions(
-                dataTemplates, agreementId, lotId);
+                dataTemplates, agreementId, lotId, eventType);
 
             if (defaultQuestions.isEmpty()) {
                 log.warn("No default questions found in provided data templates for {}", context);
@@ -56,8 +57,8 @@ public class DefaultQuestionsLoaderService extends BaseService{
             
             // Delete existing questions for this agreement and lot (if any)
             List<DefaultQuestions> existingQuestions = defaultQuestionsRepository
-                .findByAgreementIdAndLotIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(
-                    agreementId, lotId);
+                .findByAgreementIdAndLotIdAndEventTypeOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(
+                    agreementId, lotId, eventType);
 
             if (!existingQuestions.isEmpty()) {
                 defaultQuestionsRepository.deleteAll(existingQuestions);

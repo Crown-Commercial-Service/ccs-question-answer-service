@@ -146,14 +146,17 @@ public class QuestionLogicClient {
      * @param lotId The lot ID (e.g., "1")
      * @return Number of questions loaded
      */
-    public int loadDefaultQuestions(List<DataTemplate> dataTemplates, String agreementId, String lotId) {
+    public int loadDefaultQuestions(List<DataTemplate> dataTemplates,
+                                    String agreementId, String lotId,
+                                    String eventType) {
         try {
             if (dataTemplates == null || dataTemplates.isEmpty()) {
                 log.warn("No data templates provided for agreement: {}, lot: {}", agreementId, lotId);
                 return 0;
             }
             
-            return defaultQuestionsLoaderService.loadDefaultQuestionsFromBody(dataTemplates, agreementId, lotId);
+            return defaultQuestionsLoaderService.loadDefaultQuestionsFromBody(dataTemplates,
+                    agreementId, lotId, eventType);
         } catch (Exception ex) {
             rollbar.error(ex, "Error loading default questions for agreement: " + agreementId + 
                 ", lot: " + lotId);

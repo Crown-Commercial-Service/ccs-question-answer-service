@@ -26,6 +26,7 @@ class DataTemplateToDefaultQuestionsMapperTest {
 
     private static final String AGREEMENT_ID = "RM1043.9";
     private static final String LOT_ID = "1";
+    private static final String EVENT_TYPE = "FC";
 
     @Mock
     private Rollbar rollbar;
@@ -42,14 +43,16 @@ class DataTemplateToDefaultQuestionsMapperTest {
 
     @Test
     void mapToDefaultQuestionsWithNullInputReturnsEmptyList() {
-        List<DefaultQuestions> result = mapper.mapToDefaultQuestions(null, AGREEMENT_ID, LOT_ID);
+        List<DefaultQuestions> result = mapper.mapToDefaultQuestions(null,
+                AGREEMENT_ID, LOT_ID, EVENT_TYPE);
         assertTrue(result.isEmpty());
         verifyNoInteractions(rollbar);
     }
 
     @Test
     void mapToDefaultQuestionsWithEmptyListReturnsEmptyList() {
-        List<DefaultQuestions> result = mapper.mapToDefaultQuestions(Collections.emptyList(), AGREEMENT_ID, LOT_ID);
+        List<DefaultQuestions> result = mapper.mapToDefaultQuestions(Collections.emptyList(),
+                AGREEMENT_ID, LOT_ID, EVENT_TYPE);
         assertTrue(result.isEmpty());
         verifyNoInteractions(rollbar);
     }
@@ -57,7 +60,8 @@ class DataTemplateToDefaultQuestionsMapperTest {
     @Test
     void mapToDefaultQuestionsWithDataTemplateHavingNullCriteriaReturnsEmptyList() {
         List<DataTemplate> input = List.of(DataTemplate.builder().id(1).build());
-        List<DefaultQuestions> result = mapper.mapToDefaultQuestions(input, AGREEMENT_ID, LOT_ID);
+        List<DefaultQuestions> result = mapper.mapToDefaultQuestions(input,
+                AGREEMENT_ID, LOT_ID, EVENT_TYPE);
         assertTrue(result.isEmpty());
         verifyNoInteractions(rollbar);
     }
@@ -67,7 +71,8 @@ class DataTemplateToDefaultQuestionsMapperTest {
         TemplateCriteria criteria = TemplateCriteria.builder().build();
         List<DataTemplate> input = List.of(DataTemplate.builder().criteria(List.of(criteria)).build());
 
-        List<DefaultQuestions> result = mapper.mapToDefaultQuestions(input, AGREEMENT_ID, LOT_ID);
+        List<DefaultQuestions> result = mapper.mapToDefaultQuestions(input,
+                AGREEMENT_ID, LOT_ID, EVENT_TYPE);
         assertTrue(result.isEmpty());
         verifyNoInteractions(rollbar);
     }
@@ -103,7 +108,8 @@ class DataTemplateToDefaultQuestionsMapperTest {
 
 
         // Act
-        List<DefaultQuestions> result = mapper.mapToDefaultQuestions(input, AGREEMENT_ID, LOT_ID);
+        List<DefaultQuestions> result = mapper.mapToDefaultQuestions(input,
+                AGREEMENT_ID, LOT_ID, EVENT_TYPE);
 
         // Assert
         assertEquals(1, result.size());
@@ -156,7 +162,8 @@ class DataTemplateToDefaultQuestionsMapperTest {
 
         // Act
         List<DataTemplate> template = List.of(DataTemplate.builder().criteria(List.of(criteria)).build());
-        List<DefaultQuestions> result = mapper.mapToDefaultQuestions(template, AGREEMENT_ID, LOT_ID);
+        List<DefaultQuestions> result = mapper.mapToDefaultQuestions(template,
+                AGREEMENT_ID, LOT_ID, EVENT_TYPE);
 
         // Assert
         DefaultQuestions dq = result.getFirst();

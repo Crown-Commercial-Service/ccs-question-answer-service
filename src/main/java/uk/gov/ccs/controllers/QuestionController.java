@@ -227,13 +227,15 @@ public class QuestionController extends BaseController {
      * 
      * @param agreementId The agreement ID (e.g., "RM1043.9")
      * @param lotId The lot ID (e.g., "1")
+     * @param eventType The eventType (e.g., "FC")
      * @param dataTemplates List of DataTemplate objects from request body
      * @return HTTP 200 with count of questions loaded, or 500 on error
      */
-    @PostMapping("/agreements/{agreement-id}/lots/{lot-id}/load-default-questions")
+    @PostMapping("/{agreement-id}/lots/{lot-id}/{event-type}/load-default-questions")
     public ResponseEntity<String> loadDefaultQuestions(
             @PathVariable("agreement-id") String agreementId,
             @PathVariable("lot-id") String lotId,
+            @PathVariable("event-type") String eventType,
             @RequestBody List<DataTemplate> dataTemplates) {
 
         // Define the context string once for cleaner logging
@@ -250,7 +252,7 @@ public class QuestionController extends BaseController {
             }
             
             int count = questionLogicClient.loadDefaultQuestions(
-                dataTemplates, agreementId, lotId);
+                dataTemplates, agreementId, lotId, eventType);
             
             if (count == 0) {
                 log.warn("No default questions loaded for {}", context);
