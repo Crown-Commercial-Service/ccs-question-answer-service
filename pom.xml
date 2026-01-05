@@ -35,7 +35,7 @@
         <commons.version>2.21.0</commons.version>
         <commonscsv.version>1.14.1</commonscsv.version>
         <aws.version>3.4.2</aws.version>
-        <jsoup.version>1.21.2</jsoup.version>
+        <jsoup.version>1.22.1</jsoup.version>
         <guava.version>33.5.0-jre</guava.version>
         <mime.version>4.5.14</mime.version>
         <tika.version>3.2.3</tika.version>
