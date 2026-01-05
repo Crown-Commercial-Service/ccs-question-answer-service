@@ -30,7 +30,8 @@ public class DataTemplateToDefaultQuestionsMapper extends BaseMapper {
      * @return List of DefaultQuestions entities ready for database insertion
      */
     public List<DefaultQuestions> mapToDefaultQuestions(
-            List<DataTemplate> dataTemplates, String agreementId, String lotId) {
+            List<DataTemplate> dataTemplates, String agreementId, String lotId,
+            String eventType) {
 
         if (dataTemplates == null || dataTemplates.isEmpty()) {
             return Collections.emptyList();
@@ -76,7 +77,7 @@ public class DataTemplateToDefaultQuestionsMapper extends BaseMapper {
                         TemplateCriteria criteria = (TemplateCriteria) arr[1];
                         RequirementGroup rg = (RequirementGroup) arr[2];
                         Requirement req = (Requirement) arr[3];
-                        return buildDefaultQuestion(dt, criteria, rg, req, agreementId, lotId, now);
+                        return buildDefaultQuestion(dt, criteria, rg, req, agreementId, lotId, eventType, now);
                     })
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
@@ -94,7 +95,8 @@ public class DataTemplateToDefaultQuestionsMapper extends BaseMapper {
     private DefaultQuestions buildDefaultQuestion(
             DataTemplate dt,
             TemplateCriteria criteria, RequirementGroup requirementGroup,
-            Requirement requirement, String agreementId, String lotId, Timestamp now) {
+            Requirement requirement, String agreementId,
+            String lotId, String eventType, Timestamp now) {
 
         try {
             Requirement.OCDS ocds = requirement.getOcds();
@@ -168,7 +170,8 @@ public class DataTemplateToDefaultQuestionsMapper extends BaseMapper {
                     .templateId(dt.getId())
                     .templateName(dt.getTemplateName())
                     .templateMandatory(dt.getMandatory())
-                    .templateParent(dt.getParent()); // parent only available in DOS6
+                    .templateParent(dt.getParent()) // parent only available in DOS6
+                    .eventType(eventType);
 
             return builder.build();
 

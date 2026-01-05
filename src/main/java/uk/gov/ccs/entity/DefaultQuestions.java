@@ -104,5 +104,8 @@ public class DefaultQuestions {
 
     @Column(name = "template_mandatory")
     Boolean templateMandatory;
+
+    @Column(name = "event_type")
+    String eventType;
 }
 

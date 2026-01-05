@@ -22,7 +22,7 @@ public interface DefaultQuestionsRepository extends JpaRepository<DefaultQuestio
      * @param lotId The lot ID (e.g., "1")
      * @return An ordered list of all default questions for the given agreement and lot
      */
-    List<DefaultQuestions> findByAgreementIdAndLotIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(
-        String agreementId, String lotId);
+    List<DefaultQuestions> findByAgreementIdAndLotIdAndEventTypeOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(
+        String agreementId, String lotId, String eventType);
 }
 

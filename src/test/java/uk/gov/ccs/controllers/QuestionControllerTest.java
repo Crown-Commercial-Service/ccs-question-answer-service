@@ -42,7 +42,8 @@ class QuestionControllerTest {
     private static final String TEST_QUESTION_ID = "question 2";
     private static final String TEST_AGREEMENT_ID = "AGR_1234";
     private static final String TEST_LOT_ID = "LOT_5678";
-    private final String LOAD_DEFAULTS_URL = BASE_URL + "/agreements/{agreement-id}/lots/{lot-id}/load-default-questions";
+    private static final String TEST_EVENT_TYPE = "FC";
+    private final String LOAD_DEFAULTS_URL = BASE_URL + "/{agreement-id}/lots/{lot-id}/{event-type}/load-default-questions";
 
     @Autowired
     private MockMvc mockMvc;
@@ -545,11 +546,12 @@ class QuestionControllerTest {
         when(questionLogicClient.loadDefaultQuestions(
                 any(),
                 eq(TEST_AGREEMENT_ID),
-                eq(TEST_LOT_ID)))
+                eq(TEST_LOT_ID),
+                eq(TEST_EVENT_TYPE)))
                 .thenReturn(successfullyLoadedCount);
 
         // Act & Assert
-        mockMvc.perform(post(LOAD_DEFAULTS_URL, TEST_AGREEMENT_ID, TEST_LOT_ID)
+        mockMvc.perform(post(LOAD_DEFAULTS_URL, TEST_AGREEMENT_ID, TEST_LOT_ID, TEST_EVENT_TYPE)
                         .with(user("authorizedUser").roles("ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(mockTemplates)))
@@ -558,7 +560,7 @@ class QuestionControllerTest {
 
         // Verify the logic client was called
         verify(questionLogicClient, times(1))
-                .loadDefaultQuestions(any(), eq(TEST_AGREEMENT_ID), eq(TEST_LOT_ID));
+                .loadDefaultQuestions(any(), eq(TEST_AGREEMENT_ID), eq(TEST_LOT_ID), eq(TEST_EVENT_TYPE));
     }
 
     @Test
@@ -567,7 +569,7 @@ class QuestionControllerTest {
         List<MockDataTemplate> emptyTemplates = Collections.emptyList();
 
         // Act & Assert
-        mockMvc.perform(post(LOAD_DEFAULTS_URL, TEST_AGREEMENT_ID, TEST_LOT_ID)
+        mockMvc.perform(post(LOAD_DEFAULTS_URL, TEST_AGREEMENT_ID, TEST_LOT_ID, TEST_EVENT_TYPE)
                         .with(user("authorizedUser").roles("ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(emptyTemplates)))
@@ -576,7 +578,7 @@ class QuestionControllerTest {
 
         // Verify the logic client was NOT called
         verify(questionLogicClient, times(0))
-                .loadDefaultQuestions(any(), anyString(), anyString());
+                .loadDefaultQuestions(any(), anyString(), anyString(), anyString());
         // Verify Rollbar was NOT called
         verify(rollbar, times(0)).error(any(Throwable.class), anyString());
     }
@@ -590,11 +592,12 @@ class QuestionControllerTest {
         when(questionLogicClient.loadDefaultQuestions(
                 any(),
                 eq(TEST_AGREEMENT_ID),
-                eq(TEST_LOT_ID)))
+                eq(TEST_LOT_ID),
+                eq(TEST_EVENT_TYPE)))
                 .thenReturn(zeroCount);
 
         // Act & Assert
-        mockMvc.perform(post(LOAD_DEFAULTS_URL, TEST_AGREEMENT_ID, TEST_LOT_ID)
+        mockMvc.perform(post(LOAD_DEFAULTS_URL, TEST_AGREEMENT_ID, TEST_LOT_ID, TEST_EVENT_TYPE)
                         .with(user("authorizedUser").roles("ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(mockTemplates)))
@@ -604,7 +607,7 @@ class QuestionControllerTest {
 
         // Verify the logic client was called
         verify(questionLogicClient, times(1))
-                .loadDefaultQuestions(any(), eq(TEST_AGREEMENT_ID), eq(TEST_LOT_ID));
+                .loadDefaultQuestions(any(), eq(TEST_AGREEMENT_ID), eq(TEST_LOT_ID), eq(TEST_EVENT_TYPE));
     }
 
     @Test
@@ -617,11 +620,12 @@ class QuestionControllerTest {
         when(questionLogicClient.loadDefaultQuestions(
                 any(),
                 eq(TEST_AGREEMENT_ID),
-                eq(TEST_LOT_ID)))
+                eq(TEST_LOT_ID),
+                eq(TEST_EVENT_TYPE)))
                 .thenThrow(new RuntimeException(expectedErrorMessage)); // Throw a runtime exception
 
         // Act & Assert
-        mockMvc.perform(post(LOAD_DEFAULTS_URL, TEST_AGREEMENT_ID, TEST_LOT_ID)
+        mockMvc.perform(post(LOAD_DEFAULTS_URL, TEST_AGREEMENT_ID, TEST_LOT_ID, TEST_EVENT_TYPE)
                         .with(user("authorizedUser").roles("ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(mockTemplates)))

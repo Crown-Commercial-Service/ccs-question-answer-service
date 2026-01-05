@@ -28,6 +28,7 @@ class DefaultQuestionsLoaderServiceTest {
 
     private static final String AGREEMENT_ID = "RM1043.9";
     private static final String LOT_ID = "1";
+    private static final String EVENT_TYPE = "FC";
 
     @Mock
     private DefaultQuestionsRepository defaultQuestionsRepository;
@@ -59,19 +60,24 @@ class DefaultQuestionsLoaderServiceTest {
         List<DefaultQuestions> existingQuestions = List.of(createMockDefaultQuestion(), createMockDefaultQuestion(), createMockDefaultQuestion());
 
         // Configure Mocks
-        when(mapper.mapToDefaultQuestions(mockTemplates, AGREEMENT_ID, LOT_ID)).thenReturn(newQuestions);
-        when(defaultQuestionsRepository.findByAgreementIdAndLotIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(AGREEMENT_ID, LOT_ID))
+        when(mapper.mapToDefaultQuestions(mockTemplates, AGREEMENT_ID, LOT_ID, EVENT_TYPE))
+                .thenReturn(newQuestions);
+        when(defaultQuestionsRepository
+                .findByAgreementIdAndLotIdAndEventTypeOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(AGREEMENT_ID,
+                        LOT_ID, EVENT_TYPE))
                 .thenReturn(existingQuestions);
 
         // ACT
-        int result = service.loadDefaultQuestionsFromBody(mockTemplates, AGREEMENT_ID, LOT_ID);
+        int result = service.loadDefaultQuestionsFromBody(mockTemplates, AGREEMENT_ID, LOT_ID, EVENT_TYPE);
 
         // ASSERT
         assertEquals(2, result, "Should return the count of newly inserted questions.");
 
         // Verification of execution flow (Component Collaboration)
         // 1. Delete existing questions
-        verify(defaultQuestionsRepository, times(1)).findByAgreementIdAndLotIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(AGREEMENT_ID, LOT_ID);
+        verify(defaultQuestionsRepository, times(1))
+                .findByAgreementIdAndLotIdAndEventTypeOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(AGREEMENT_ID,
+                        LOT_ID, EVENT_TYPE);
         verify(defaultQuestionsRepository, times(1)).deleteAll(existingQuestions);
         verify(rollbar, times(1)).info(contains("Deleted 3 existing default questions"));
 
@@ -91,21 +97,27 @@ class DefaultQuestionsLoaderServiceTest {
         List<DefaultQuestions> newQuestions = List.of(createMockDefaultQuestion());
 
         // Configure Mocks
-        when(mapper.mapToDefaultQuestions(mockTemplates, AGREEMENT_ID, LOT_ID)).thenReturn(newQuestions);
-        when(defaultQuestionsRepository.findByAgreementIdAndLotIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(AGREEMENT_ID, LOT_ID))
+        when(mapper.mapToDefaultQuestions(mockTemplates, AGREEMENT_ID, LOT_ID, EVENT_TYPE))
+                .thenReturn(newQuestions);
+        when(defaultQuestionsRepository
+                .findByAgreementIdAndLotIdAndEventTypeOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(AGREEMENT_ID,
+                        LOT_ID, EVENT_TYPE))
                 .thenReturn(Collections.emptyList()); // No existing data
 
         // ACT
-        int result = service.loadDefaultQuestionsFromBody(mockTemplates, AGREEMENT_ID, LOT_ID);
+        int result = service.loadDefaultQuestionsFromBody(mockTemplates, AGREEMENT_ID, LOT_ID, EVENT_TYPE);
 
         // ASSERT
         assertEquals(1, result, "Should return the count of newly inserted questions.");
 
         // Verification of execution flow
-        verify(mapper, times(1)).mapToDefaultQuestions(mockTemplates, AGREEMENT_ID, LOT_ID);
+        verify(mapper, times(1)).mapToDefaultQuestions(mockTemplates, AGREEMENT_ID,
+                LOT_ID, EVENT_TYPE);
 
         // Delete step verification (deleteAll should not be called)
-        verify(defaultQuestionsRepository, times(1)).findByAgreementIdAndLotIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(AGREEMENT_ID, LOT_ID);
+        verify(defaultQuestionsRepository, times(1))
+                .findByAgreementIdAndLotIdAndEventTypeOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(AGREEMENT_ID,
+                        LOT_ID, EVENT_TYPE);
         verify(rollbar, never()).info(contains("Deleted"));
 
         // Insert new questions
@@ -116,7 +128,7 @@ class DefaultQuestionsLoaderServiceTest {
     @Test
     void loadDefaultQuestionsFromBodyWithNullTemplatesReturnsZeroAndLogsWarning() {
         // ACT
-        int result = service.loadDefaultQuestionsFromBody(null, AGREEMENT_ID, LOT_ID);
+        int result = service.loadDefaultQuestionsFromBody(null, AGREEMENT_ID, LOT_ID, EVENT_TYPE);
 
         // ASSERT
         assertEquals(0, result);
@@ -128,7 +140,7 @@ class DefaultQuestionsLoaderServiceTest {
     @Test
     void loadDefaultQuestionsFromBodyWithEmptyTemplatesReturnsZeroAndLogsWarning() {
         // ACT
-        int result = service.loadDefaultQuestionsFromBody(Collections.emptyList(), AGREEMENT_ID, LOT_ID);
+        int result = service.loadDefaultQuestionsFromBody(Collections.emptyList(), AGREEMENT_ID, LOT_ID, EVENT_TYPE);
 
         // ASSERT
         assertEquals(0, result);
@@ -141,18 +153,22 @@ class DefaultQuestionsLoaderServiceTest {
     void loadDefaultQuestionsFromBodyMapperReturnsEmptyListReturnsZeroAndLogsWarning() {
         // ARRANGE
         List<DataTemplate> mockTemplates = List.of(createDataTemplate());
-        when(mapper.mapToDefaultQuestions(mockTemplates, AGREEMENT_ID, LOT_ID)).thenReturn(Collections.emptyList());
+        when(mapper.mapToDefaultQuestions(mockTemplates, AGREEMENT_ID, LOT_ID, EVENT_TYPE))
+                .thenReturn(Collections.emptyList());
 
         // ACT
-        int result = service.loadDefaultQuestionsFromBody(mockTemplates, AGREEMENT_ID, LOT_ID);
+        int result = service.loadDefaultQuestionsFromBody(mockTemplates, AGREEMENT_ID, LOT_ID, EVENT_TYPE);
 
         // ASSERT
         assertEquals(0, result);
-        verify(mapper, times(1)).mapToDefaultQuestions(mockTemplates, AGREEMENT_ID, LOT_ID);
+        verify(mapper, times(1))
+                .mapToDefaultQuestions(mockTemplates, AGREEMENT_ID, LOT_ID, EVENT_TYPE);
         verify(rollbar, times(1)).warning(contains("No default questions found in provided data templates"));
 
         // Should stop before interacting with the repository
-        verify(defaultQuestionsRepository, never()).findByAgreementIdAndLotIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(anyString(), anyString());
+        verify(defaultQuestionsRepository, never())
+                .findByAgreementIdAndLotIdAndEventTypeOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(anyString(),
+                        anyString(), anyString());
     }
 
     @Test
@@ -160,11 +176,12 @@ class DefaultQuestionsLoaderServiceTest {
         // ARRANGE
         List<DataTemplate> mockTemplates = List.of(createDataTemplate());
         RuntimeException mapperEx = new RuntimeException("Mapping Failed");
-        when(mapper.mapToDefaultQuestions(mockTemplates, AGREEMENT_ID, LOT_ID)).thenThrow(mapperEx);
+        when(mapper.mapToDefaultQuestions(mockTemplates, AGREEMENT_ID, LOT_ID, EVENT_TYPE))
+                .thenThrow(mapperEx);
 
         // ACT & ASSERT
         RuntimeException thrown = assertThrows(RuntimeException.class,
-                () -> service.loadDefaultQuestionsFromBody(mockTemplates, AGREEMENT_ID, LOT_ID),
+                () -> service.loadDefaultQuestionsFromBody(mockTemplates, AGREEMENT_ID, LOT_ID, EVENT_TYPE),
                 "Should re-throw a RuntimeException");
 
         // Verify exception details
@@ -186,13 +203,17 @@ class DefaultQuestionsLoaderServiceTest {
         List<DefaultQuestions> newQuestions = List.of(createMockDefaultQuestion());
         RuntimeException repoEx = new RuntimeException("DB Query Failed");
 
-        when(mapper.mapToDefaultQuestions(mockTemplates, AGREEMENT_ID, LOT_ID)).thenReturn(newQuestions);
-        when(defaultQuestionsRepository.findByAgreementIdAndLotIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(AGREEMENT_ID, LOT_ID))
+        when(mapper.mapToDefaultQuestions(mockTemplates, AGREEMENT_ID, LOT_ID, EVENT_TYPE))
+                .thenReturn(newQuestions);
+        when(defaultQuestionsRepository
+                .findByAgreementIdAndLotIdAndEventTypeOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(AGREEMENT_ID,
+                        LOT_ID, EVENT_TYPE))
                 .thenThrow(repoEx);
 
         // ACT & ASSERT
         assertThrows(RuntimeException.class,
-                () -> service.loadDefaultQuestionsFromBody(mockTemplates, AGREEMENT_ID, LOT_ID),
+                () -> service.loadDefaultQuestionsFromBody(mockTemplates,
+                        AGREEMENT_ID, LOT_ID, EVENT_TYPE),
                 "Should re-throw a RuntimeException");
 
         // Verify logging
@@ -210,14 +231,17 @@ class DefaultQuestionsLoaderServiceTest {
         List<DefaultQuestions> newQuestions = List.of(createMockDefaultQuestion());
         RuntimeException saveEx = new RuntimeException("DB Save Failed");
 
-        when(mapper.mapToDefaultQuestions(mockTemplates, AGREEMENT_ID, LOT_ID)).thenReturn(newQuestions);
-        when(defaultQuestionsRepository.findByAgreementIdAndLotIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(anyString(), anyString()))
+        when(mapper.mapToDefaultQuestions(mockTemplates, AGREEMENT_ID, LOT_ID, EVENT_TYPE))
+                .thenReturn(newQuestions);
+        when(defaultQuestionsRepository
+                .findByAgreementIdAndLotIdAndEventTypeOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(anyString(),
+                        anyString(), anyString()))
                 .thenReturn(Collections.emptyList());
         when(defaultQuestionsRepository.saveAll(newQuestions)).thenThrow(saveEx);
 
         // ACT & ASSERT
         assertThrows(RuntimeException.class,
-                () -> service.loadDefaultQuestionsFromBody(mockTemplates, AGREEMENT_ID, LOT_ID),
+                () -> service.loadDefaultQuestionsFromBody(mockTemplates, AGREEMENT_ID, LOT_ID, EVENT_TYPE),
                 "Should re-throw a RuntimeException");
 
         // Verify logging

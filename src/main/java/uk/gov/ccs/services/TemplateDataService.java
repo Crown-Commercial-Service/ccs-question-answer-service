@@ -50,8 +50,8 @@ public class TemplateDataService extends BaseService {
             // Query default questions from default_questions table
             // Directly by agreement_id and lot_id
             List<DefaultQuestions> defaultQuestions = defaultQuestionsRepository
-                .findByAgreementIdAndLotIdOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(
-                    agreementId, formattedLotId);
+                .findByAgreementIdAndLotIdAndEventTypeOrderByCriteriaIdAscGroupIdAscQuestionOrderAsc(
+                    agreementId, formattedLotId, eventType);
             
             if (defaultQuestions == null || defaultQuestions.isEmpty()) {
                 log.debug("No default questions found for {}", context);
