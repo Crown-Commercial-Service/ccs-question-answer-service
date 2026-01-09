@@ -1,10 +1,12 @@
 package uk.gov.ccs.mapper;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.ccs.entity.DefaultQuestions;
 import uk.gov.ccs.model.agreements.*;
 
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -140,7 +142,20 @@ public class DefaultQuestionsToDataTemplateMapper extends BaseMapper {
                 .maxValue(null) // Not available in default_questions table
                 .period(null) // Not available in default_questions table
                 .build();
-            
+
+            List<Requirement.Option> options = null;
+
+            if(StringUtils.isNotEmpty(question.getOptions())) {
+                try {
+                    options = objectMapper.readValue(question.getOptions(),
+                            new TypeReference<>() {
+                            });
+                } catch (Exception ex) {
+                    log.error("Error parsing question options. error {}", ex.getMessage());
+                    rollbar.warning("Error parsing question options: " + ex.getMessage());
+                }
+            }
+
             // Build nonOCDS part
             Requirement.NonOCDS.NonOCDSBuilder nonOCDSBuilder = Requirement.NonOCDS.builder()
                 .order(question.getQuestionOrder())
@@ -152,7 +167,7 @@ public class DefaultQuestionsToDataTemplateMapper extends BaseMapper {
                 .inheritance(null) // Not available in default_questions table
                 .inheritsFrom(null) // Not available in default_questions table
                 .timelineDependency(null) // Not available in default_questions table
-                .options(null); // Not available in default_questions table (answers stored separately)
+                .options(options);
             
             // Parse dependency if exists
             Dependency dependency = null;

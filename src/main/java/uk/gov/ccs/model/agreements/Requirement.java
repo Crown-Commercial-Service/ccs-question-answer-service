@@ -145,11 +145,13 @@ public class Requirement {
   @Data
   @Builder
   @Jacksonized
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   public static class Option {
 
     String value;
     Boolean select;
     String text;
     TableDefinition tableDefinition;
+    Boolean selected;
   }
 }

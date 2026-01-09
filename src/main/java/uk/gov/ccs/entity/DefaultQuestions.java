@@ -107,5 +107,9 @@ public class DefaultQuestions {
 
     @Column(name = "event_type")
     String eventType;
+
+    @Type(JsonType.class)
+    @Column(name = "options", columnDefinition = "jsonb")
+    String options;
 }
 
