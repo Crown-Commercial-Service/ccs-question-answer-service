@@ -12,6 +12,7 @@ import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -99,6 +100,7 @@ public class DataTemplateToDefaultQuestionsMapper extends BaseMapper {
             String lotId, String eventType, Timestamp now) {
 
         try {
+
             Requirement.OCDS ocds = requirement.getOcds();
             Requirement.NonOCDS nonOCDS = requirement.getNonOCDS();
             RequirementGroup.OCDS groupOcds = requirementGroup.getOcds();
@@ -143,6 +145,11 @@ public class DataTemplateToDefaultQuestionsMapper extends BaseMapper {
                 }
             }
 
+            List<Requirement.Option> options = Optional.of(requirement)
+                    .map(Requirement::getNonOCDS)
+                    .map(Requirement.NonOCDS::getOptions)
+                    .orElse(Collections.emptyList());
+
             DefaultQuestions.DefaultQuestionsBuilder builder = DefaultQuestions.builder()
                     .agreementId(agreementId)
                     .lotId(lotId)
@@ -171,7 +178,8 @@ public class DataTemplateToDefaultQuestionsMapper extends BaseMapper {
                     .templateName(dt.getTemplateName())
                     .templateMandatory(dt.getMandatory())
                     .templateParent(dt.getParent()) // parent only available in DOS6
-                    .eventType(eventType);
+                    .eventType(eventType)
+                    .options(objectMapper.writeValueAsString(options));
 
             return builder.build();
 
