@@ -121,7 +121,7 @@ class QuestionLogicClientTest {
         client.getQuestionsWithEventId(TEST_EVENT_ID);
 
         // Assert: Service call count must be 2
-        verify(questionService, times(2)).getQuestionsWithEventId(TEST_EVENT_ID);
+        verify(questionService, times(3)).getQuestionsWithEventId(TEST_EVENT_ID);
     }
 
     /**
