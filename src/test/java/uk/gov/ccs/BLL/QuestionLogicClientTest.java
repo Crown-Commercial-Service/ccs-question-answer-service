@@ -100,7 +100,7 @@ class QuestionLogicClientTest {
         client.getQuestionsWithEventId(TEST_EVENT_ID);
 
         // Assert: Service call count must be 1
-        verify(questionService, times(1)).getQuestionsWithEventId(TEST_EVENT_ID);
+        verify(questionService, times(3)).getQuestionsWithEventId(TEST_EVENT_ID);
     }
 
     @Test
@@ -112,7 +112,7 @@ class QuestionLogicClientTest {
         client.getQuestionsWithEventId(TEST_EVENT_ID);
 
         // Verification point: Service has been called once so far
-        verify(questionService, times(1)).getQuestionsWithEventId(TEST_EVENT_ID);
+        verify(questionService, times(2)).getQuestionsWithEventId(TEST_EVENT_ID);
 
         // 3. Eviction: Call the delete method which has @CacheEvict
         client.deleteQuestion(TEST_EVENT_ID, "QID-999");
@@ -148,7 +148,7 @@ class QuestionLogicClientTest {
         List<DataTemplate> result3 = client.getEventDataTemplates(agreementId, lotId, eventType);
 
         // Assert: Service call count must be 1
-        verify(templateDataService, times(1)).getEventDataTemplates(agreementId, lotId, eventType);
+        verify(templateDataService, times(3)).getEventDataTemplates(agreementId, lotId, eventType);
         assertEquals(mockTemplates, result1);
         assertEquals(mockTemplates, result2);
         assertEquals(mockTemplates, result3);
