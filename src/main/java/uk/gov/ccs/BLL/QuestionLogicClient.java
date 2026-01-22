@@ -97,7 +97,7 @@ public class QuestionLogicClient {
      * @param eventId to retrieve questions for that eventId
      * @return list of questions {@link List<Questions>}
      */
-    @Cacheable(value = "qAndACache", key = "#root.methodName + '-' + #eventId")
+    //@Cacheable(value = "qAndACache", key = "#root.methodName + '-' + #eventId")
     public List<Questions> getQuestionsWithEventId(final String eventId) {
         return questionService.getQuestionsWithEventId(eventId);
     }
@@ -123,7 +123,7 @@ public class QuestionLogicClient {
      * @param eventType Event type (e.g., "FC")
      * @return List of DataTemplate objects (same format as agreements-service)
      */
-    @Cacheable(value = "dataTemplatesCache", key = "#agreementId + '-' + #lotId + '-' + #eventType")
+    //@Cacheable(value = "dataTemplatesCache", key = "#agreementId + '-' + #lotId + '-' + #eventType")
     public List<DataTemplate> getEventDataTemplates(
             String agreementId, String lotId, String eventType) {
         try {
