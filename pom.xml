@@ -49,7 +49,7 @@
         <maven-replacer.version>1.5.3</maven-replacer.version>
         <swagger-annotations.version>1.6.16</swagger-annotations.version>
         <springdoc.version>2.3.0</springdoc.version>
-        <hibernate.version>6.6.32.Final</hibernate.version>
+        <hibernate.version>7.3.0.Final</hibernate.version>
         <jackson.databind.nullable.version>0.2.8</jackson.databind.nullable.version>
         <springdoc.openapi.ui.version>1.8.0</springdoc.openapi.ui.version>
         <feignclient.version>4.3.0</feignclient.version>
