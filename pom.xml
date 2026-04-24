@@ -53,6 +53,7 @@
         <jackson.databind.nullable.version>0.2.8</jackson.databind.nullable.version>
         <springdoc.openapi.ui.version>1.8.0</springdoc.openapi.ui.version>
         <feignclient.version>4.3.0</feignclient.version>
+        <h2.version>2.4.240</h2.version>
     </properties>
 
     <dependencyManagement>
@@ -314,6 +315,12 @@
                     <groupId>commons-io</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
     <build>
