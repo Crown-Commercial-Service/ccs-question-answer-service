@@ -22,30 +22,30 @@
         <springboot.version>3.5.12</springboot.version>
         <spring-boot.version>3.5.7</spring-boot.version>
         <selenium.version>4.39.0</selenium.version>
-        <junitapi.version>6.0.1</junitapi.version>
+        <junitapi.version>6.0.3</junitapi.version>
         <cucumber.version>7.33.0</cucumber.version>
         <testng.version>7.11.0</testng.version>
-        <rollbar.version>2.1.0</rollbar.version>
+        <rollbar.version>2.2.0</rollbar.version>
         <springsecurity.version>3.5.12</springsecurity.version>
         <ehcache.version>3.11.1</ehcache.version>
         <snakeyaml.version>2.5</snakeyaml.version>
         <lombok.version>1.18.42</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <compiler.version>3.14.1</compiler.version>
-        <commons.version>2.21.0</commons.version>
+        <commons.version>2.22.0</commons.version>
         <commonscsv.version>1.14.1</commonscsv.version>
         <aws.version>3.4.2</aws.version>
-        <jsoup.version>1.22.1</jsoup.version>
-        <guava.version>33.5.0-jre</guava.version>
+        <jsoup.version>1.22.2</jsoup.version>
+        <guava.version>33.6.0-jre</guava.version>
         <mime.version>4.5.14</mime.version>
-        <tika.version>3.2.3</tika.version>
+        <tika.version>3.3.0</tika.version>
         <json.version>20251224</json.version>
         <openapi-generator.version>7.18.0</openapi-generator.version>
         <hibernate-types.version>2.21.1</hibernate-types.version>
         <modelmapper.version>3.2.6</modelmapper.version>
         <swagger-parser.version>2.1.35</swagger-parser.version>
         <hsql.version>2.7.4</hsql.version>
-        <postgres.version>42.7.8</postgres.version>
+        <postgres.version>42.7.11</postgres.version>
         <maven-replacer.version>1.5.3</maven-replacer.version>
         <swagger-annotations.version>1.6.16</swagger-annotations.version>
         <springdoc.version>2.3.0</springdoc.version>
