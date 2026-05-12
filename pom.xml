@@ -21,7 +21,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <springboot.version>3.5.12</springboot.version>
         <spring-boot.version>3.5.7</spring-boot.version>
-        <selenium.version>4.39.0</selenium.version>
+        <selenium.version>4.43.0</selenium.version>
         <junitapi.version>6.0.3</junitapi.version>
         <cucumber.version>7.34.3</cucumber.version>
         <testng.version>7.12.0</testng.version>
