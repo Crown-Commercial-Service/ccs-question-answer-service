@@ -45,7 +45,7 @@
         <modelmapper.version>3.2.6</modelmapper.version>
         <swagger-parser.version>2.1.35</swagger-parser.version>
         <hsql.version>2.7.4</hsql.version>
-        <postgres.version>42.7.8</postgres.version>
+        <postgres.version>42.7.11</postgres.version>
         <maven-replacer.version>1.5.3</maven-replacer.version>
         <swagger-annotations.version>1.6.16</swagger-annotations.version>
         <springdoc.version>2.3.0</springdoc.version>
