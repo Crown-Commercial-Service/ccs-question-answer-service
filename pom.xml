@@ -40,7 +40,7 @@
         <mime.version>4.5.14</mime.version>
         <tika.version>3.2.3</tika.version>
         <json.version>20251224</json.version>
-        <openapi-generator.version>7.18.0</openapi-generator.version>
+        <openapi-generator.version>7.22.0</openapi-generator.version>
         <hibernate-types.version>2.21.1</hibernate-types.version>
         <modelmapper.version>3.2.6</modelmapper.version>
         <swagger-parser.version>2.1.35</swagger-parser.version>
