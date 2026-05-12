@@ -20,7 +20,7 @@
         <maven.compiler.target>23</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <springboot.version>3.5.12</springboot.version>
-        <spring-boot.version>3.5.7</spring-boot.version>
+        <spring-boot.version>4.0.6</spring-boot.version>
         <selenium.version>4.43.0</selenium.version>
         <junitapi.version>6.0.3</junitapi.version>
         <cucumber.version>7.34.3</cucumber.version>
