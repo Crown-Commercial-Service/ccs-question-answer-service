@@ -8,9 +8,6 @@ info:
 # Server configuration (primarily for local dev)
 server:
   port: 4000
-  error:
-    whitelabel:
-      enabled: false
 
 # Cache length
 config:
@@ -22,6 +19,10 @@ config:
 
 # Error and Spring configuration
 spring:
+  web:
+    error:
+      whitelabel:
+        enabled: false
   cloud:
     aws:
       region:

@@ -2,15 +2,16 @@ package uk.gov.ccs.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rollbar.notifier.Rollbar;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.ccs.BLL.QuestionLogicClient;
 import uk.gov.ccs.config.SecurityConfig;
@@ -51,17 +52,21 @@ class QuestionControllerTest {
     @Value("${config.security.api-key}")
     private String apiKey;
 
-    @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private Rollbar rollbar;
 
-    @MockBean
+    @MockitoBean
     private QuestionLogicClient questionLogicClient;
 
-    @MockBean
+    @MockitoBean
     private QuestionService questionService;
+
+    @BeforeEach
+    public void setUp() {
+        objectMapper = new ObjectMapper();
+    }
 
     @Test
     void getQuestionsShouldReturnListOfQuestionsWhenDataIsFound() throws Exception {

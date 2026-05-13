@@ -1,4 +1,4 @@
-package uk.gov.crowncommercial.dts.scale.cat.config;
+package uk.gov.ccs.config;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.orm.jpa.vendor.Database;
