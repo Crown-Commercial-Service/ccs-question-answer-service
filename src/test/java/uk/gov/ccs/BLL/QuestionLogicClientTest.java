@@ -3,13 +3,12 @@ package uk.gov.ccs.BLL;
 import com.rollbar.notifier.Rollbar;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import uk.gov.ccs.clients.AgreementsClient;
 import uk.gov.ccs.mapper.DataTemplateMapper;
 import uk.gov.ccs.mapper.DataTemplateToDefaultQuestionsMapper;
@@ -32,40 +31,40 @@ import static org.mockito.Mockito.when;
 import static uk.gov.ccs.BLL.TestMatcher.givenQuestion1;
 
 @SpringBootTest(classes = CacheTestConfiguration.class)
-@ExtendWith(MockitoExtension.class)
+@Import({QuestionService.class, DefaultQuestionsLoaderService.class})
 class QuestionLogicClientTest {
 
     private final String TEST_EVENT_ID = "EVENT-TEST-1";
 
-    @Mock
+    @MockitoBean
     private QuestionRepository questionRepository;
 
-    @Mock
+    @MockitoBean
     private DefaultQuestionsRepository defaultQuestionsRepository;
 
-    @Mock
+    @MockitoBean
     private DataTemplateToDefaultQuestionsMapper dataTemplateToDefaultQuestionsMapper;
 
-    @Mock
+    @MockitoBean
     private Rollbar rollbar;
 
-    @Mock
+    @MockitoBean
     private AgreementsClient agreementsClient;
 
-    @Mock
+    @MockitoBean
     private DataTemplateMapper dataTemplateMapper;
 
-    @Mock
+    @MockitoBean
     private TemplateDataService templateDataService;
 
     @Autowired
     private QuestionLogicClient client;
 
     // Spy on the service to verify how many times its method is actually called
-    @Spy
+    @MockitoSpyBean
     private QuestionService questionService;
 
-    @Spy
+    @MockitoSpyBean
     private DefaultQuestionsLoaderService defaultQuestionsLoaderService;
 
     // Inject the CacheManager to manually clear the cache before each test

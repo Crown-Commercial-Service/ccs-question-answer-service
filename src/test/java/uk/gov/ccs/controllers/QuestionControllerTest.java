@@ -2,10 +2,8 @@ package uk.gov.ccs.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rollbar.notifier.Rollbar;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -13,6 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.ccs.BLL.QuestionLogicClient;
 import uk.gov.ccs.config.SecurityConfig;
@@ -37,7 +36,6 @@ import static uk.gov.ccs.constants.Constants.responses_Success;
 @Import(SecurityConfig.class)
 @ActiveProfiles("test")
 @TestPropertySource(properties = "config.security.api-key=abdc1234")
-@ExtendWith(MockitoExtension.class)
 class QuestionControllerTest {
 
     private static final String BASE_URL = "/questions";
@@ -54,17 +52,21 @@ class QuestionControllerTest {
     @Value("${config.security.api-key}")
     private String apiKey;
 
-    @Autowired
     private ObjectMapper objectMapper;
 
-    @Mock
+    @MockitoBean
     private Rollbar rollbar;
 
-    @Mock
+    @MockitoBean
     private QuestionLogicClient questionLogicClient;
 
-    @Mock
+    @MockitoBean
     private QuestionService questionService;
+
+    @BeforeEach
+    public void setUp() {
+        objectMapper = new ObjectMapper();
+    }
 
     @Test
     void getQuestionsShouldReturnListOfQuestionsWhenDataIsFound() throws Exception {
