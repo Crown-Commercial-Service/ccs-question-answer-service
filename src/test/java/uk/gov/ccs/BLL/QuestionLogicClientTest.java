@@ -3,10 +3,12 @@ package uk.gov.ccs.BLL;
 import com.rollbar.notifier.Rollbar;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cache.CacheManager;
 import uk.gov.ccs.clients.AgreementsClient;
 import uk.gov.ccs.mapper.DataTemplateMapper;
@@ -30,39 +32,40 @@ import static org.mockito.Mockito.when;
 import static uk.gov.ccs.BLL.TestMatcher.givenQuestion1;
 
 @SpringBootTest(classes = CacheTestConfiguration.class)
+@ExtendWith(MockitoExtension.class)
 class QuestionLogicClientTest {
 
     private final String TEST_EVENT_ID = "EVENT-TEST-1";
 
-    @MockBean
+    @Mock
     private QuestionRepository questionRepository;
 
-    @MockBean
+    @Mock
     private DefaultQuestionsRepository defaultQuestionsRepository;
 
-    @MockBean
+    @Mock
     private DataTemplateToDefaultQuestionsMapper dataTemplateToDefaultQuestionsMapper;
 
-    @MockBean
+    @Mock
     private Rollbar rollbar;
 
-    @MockBean
+    @Mock
     private AgreementsClient agreementsClient;
 
-    @MockBean
+    @Mock
     private DataTemplateMapper dataTemplateMapper;
 
-    @MockBean
+    @Mock
     private TemplateDataService templateDataService;
 
     @Autowired
     private QuestionLogicClient client;
 
     // Spy on the service to verify how many times its method is actually called
-    @SpyBean
+    @Spy
     private QuestionService questionService;
 
-    @SpyBean
+    @Spy
     private DefaultQuestionsLoaderService defaultQuestionsLoaderService;
 
     // Inject the CacheManager to manually clear the cache before each test

@@ -3,10 +3,12 @@ package uk.gov.ccs.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rollbar.notifier.Rollbar;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -35,6 +37,7 @@ import static uk.gov.ccs.constants.Constants.responses_Success;
 @Import(SecurityConfig.class)
 @ActiveProfiles("test")
 @TestPropertySource(properties = "config.security.api-key=abdc1234")
+@ExtendWith(MockitoExtension.class)
 class QuestionControllerTest {
 
     private static final String BASE_URL = "/questions";
@@ -54,13 +57,13 @@ class QuestionControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @Mock
     private Rollbar rollbar;
 
-    @MockBean
+    @Mock
     private QuestionLogicClient questionLogicClient;
 
-    @MockBean
+    @Mock
     private QuestionService questionService;
 
     @Test

@@ -33,7 +33,7 @@
         <compiler.version>3.14.1</compiler.version>
         <commons.version>2.21.0</commons.version>
         <commonscsv.version>1.14.1</commonscsv.version>
-        <aws.version>3.4.2</aws.version>
+        <aws.version>4.0.2</aws.version>
         <jsoup.version>1.22.1</jsoup.version>
         <guava.version>33.5.0-jre</guava.version>
         <mime.version>4.5.14</mime.version>
@@ -48,10 +48,13 @@
         <maven-replacer.version>1.5.3</maven-replacer.version>
         <swagger-annotations.version>1.6.16</swagger-annotations.version>
         <springdoc.version>2.3.0</springdoc.version>
-        <hibernate.version>6.6.32.Final</hibernate.version>
-        <jackson.databind.nullable.version>0.2.8</jackson.databind.nullable.version>
+        <hibernate.version>6.6.50.Final</hibernate.version>
+        <jackson-databind.version>3.1.3</jackson-databind.version>
         <springdoc.openapi.ui.version>1.8.0</springdoc.openapi.ui.version>
         <feignclient.version>4.3.0</feignclient.version>
+        <spring-cloud-aws.version>4.0.2</spring-cloud-aws.version>
+        <spring-security-test.version>7.0.5</spring-security-test.version>
+        <h2.version>2.4.240</h2.version>
     </properties>
 
     <dependencyManagement>
@@ -106,6 +109,7 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
+            <version>${spring-security-test.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -163,6 +167,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <version>${springboot.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>hibernate-core</artifactId>
@@ -171,8 +176,9 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
+            <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <version>${jackson-databind.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -271,10 +277,12 @@
         <dependency>
             <groupId>io.awspring.cloud</groupId>
             <artifactId>spring-cloud-aws-starter</artifactId>
+            <version>${spring-cloud-aws.version}</version>
         </dependency>
         <dependency>
             <groupId>io.awspring.cloud</groupId>
             <artifactId>spring-cloud-aws-starter-parameter-store</artifactId>
+            <version>${spring-cloud-aws.version}</version>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
@@ -313,6 +321,17 @@
                     <groupId>commons-io</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <version>${springboot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
     <build>
