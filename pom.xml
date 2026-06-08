@@ -40,7 +40,7 @@
         <tika.version>3.3.1</tika.version>
         <json.version>20260522</json.version>
         <openapi-generator.version>7.22.0</openapi-generator.version>
-        <hibernate-types.version>3.15.2</hibernate-types.version>
+        <hibernate-types.version>3.15.3</hibernate-types.version>
         <modelmapper.version>3.2.6</modelmapper.version>
         <swagger-parser.version>2.1.35</swagger-parser.version>
         <hsql.version>2.7.4</hsql.version>
