@@ -25,7 +25,7 @@
         <cucumber.version>7.34.3</cucumber.version>
         <testng.version>7.12.0</testng.version>
         <rollbar.version>2.3.0</rollbar.version>
-        <springsecurity.version>4.0.6</springsecurity.version>
+        <springsecurity.version>4.1.0</springsecurity.version>
         <ehcache.version>3.12.0</ehcache.version>
         <snakeyaml.version>2.6</snakeyaml.version>
         <lombok.version>1.18.46</lombok.version>
