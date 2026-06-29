@@ -22,7 +22,7 @@
         <springboot.version>4.1.0</springboot.version>
         <selenium.version>4.45.0</selenium.version>
         <junitapi.version>6.1.1</junitapi.version>
-        <cucumber.version>7.34.3</cucumber.version>
+        <cucumber.version>7.34.4</cucumber.version>
         <testng.version>7.12.0</testng.version>
         <rollbar.version>2.3.0</rollbar.version>
         <springsecurity.version>4.1.0</springsecurity.version>
