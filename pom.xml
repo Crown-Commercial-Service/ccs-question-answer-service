@@ -53,7 +53,7 @@
         <jackson-annotations.version>2.22</jackson-annotations.version>
         <springdoc.openapi.ui.version>1.8.0</springdoc.openapi.ui.version>
         <feignclient.version>5.0.2</feignclient.version>
-        <spring-cloud-aws.version>4.0.2</spring-cloud-aws.version>
+        <spring-cloud-aws.version>4.1.0</spring-cloud-aws.version>
         <spring-security-test.version>7.1.0</spring-security-test.version>
         <h2.version>2.4.240</h2.version>
     </properties>
