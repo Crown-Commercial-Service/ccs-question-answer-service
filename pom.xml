@@ -24,7 +24,7 @@
         <junitapi.version>6.1.2</junitapi.version>
         <cucumber.version>7.34.6</cucumber.version>
         <testng.version>7.12.0</testng.version>
-        <rollbar.version>2.3.0</rollbar.version>
+        <rollbar.version>2.3.1</rollbar.version>
         <springsecurity.version>4.1.0</springsecurity.version>
         <ehcache.version>3.12.0</ehcache.version>
         <snakeyaml.version>2.6</snakeyaml.version>
