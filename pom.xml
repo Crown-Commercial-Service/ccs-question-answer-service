@@ -38,7 +38,7 @@
         <guava.version>33.6.0-jre</guava.version>
         <mime.version>4.5.14</mime.version>
         <tika.version>3.3.2</tika.version>
-        <json.version>20260719</json.version>
+        <json.version>20260814</json.version>
         <openapi-generator.version>7.24.0</openapi-generator.version>
         <hibernate-types.version>3.15.4</hibernate-types.version>
         <modelmapper.version>3.2.6</modelmapper.version>
