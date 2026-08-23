@@ -19,7 +19,7 @@
         <maven.compiler.source>23</maven.compiler.source>
         <maven.compiler.target>23</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <springboot.version>4.1.0</springboot.version>
+        <springboot.version>4.1.1</springboot.version>
         <selenium.version>4.46.0</selenium.version>
         <junitapi.version>6.1.2</junitapi.version>
         <cucumber.version>7.34.6</cucumber.version>
