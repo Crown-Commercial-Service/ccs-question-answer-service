@@ -49,7 +49,7 @@
         <swagger-annotations.version>1.6.16</swagger-annotations.version>
         <springdoc.version>2.3.0</springdoc.version>
         <hibernate.version>7.4.5.Final</hibernate.version>
-        <jackson.version>3.2.1</jackson.version>
+        <jackson.version>3.2.2</jackson.version>
         <jackson-annotations.version>2.22</jackson-annotations.version>
         <springdoc.openapi.ui.version>1.8.0</springdoc.openapi.ui.version>
         <feignclient.version>5.0.2</feignclient.version>
