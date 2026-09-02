@@ -33,7 +33,7 @@
         <compiler.version>3.15.0</compiler.version>
         <commons.version>2.22.0</commons.version>
         <commonscsv.version>1.14.1</commonscsv.version>
-        <aws.version>4.1.0</aws.version>
+        <aws.version>4.1.1</aws.version>
         <jsoup.version>1.23.2</jsoup.version>
         <guava.version>33.7.1-jre</guava.version>
         <mime.version>4.5.14</mime.version>
