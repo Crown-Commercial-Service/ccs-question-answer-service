@@ -28,7 +28,7 @@
         <springsecurity.version>4.1.1</springsecurity.version>
         <ehcache.version>3.12.0</ehcache.version>
         <snakeyaml.version>2.6</snakeyaml.version>
-        <lombok.version>1.18.46</lombok.version>
+        <lombok.version>1.18.48</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <compiler.version>3.15.0</compiler.version>
         <commons.version>2.22.0</commons.version>
