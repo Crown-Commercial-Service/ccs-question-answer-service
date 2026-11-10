@@ -1,8 +1,8 @@
 # App info (for actuator)
 info:
   app:
-    name: CCS Question and Answer Service API
-    description: The Question and Answer Service API for the CrownCommercialService Contract Award Service
+    name: GCA Question and Answer Service API
+    description: The Question and Answer Service API for the Government Commercial Agency Contract Award Service
     version: 1.0.0
 
 # Server configuration (primarily for local dev)
