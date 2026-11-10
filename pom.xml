@@ -20,11 +20,11 @@
         <maven.compiler.target>23</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <springboot.version>4.1.2</springboot.version>
-        <selenium.version>4.51.0</selenium.version>
+        <selenium.version>4.52.0</selenium.version>
         <junitapi.version>6.1.3</junitapi.version>
         <cucumber.version>8.0.4</cucumber.version>
         <testng.version>7.12.0</testng.version>
-        <rollbar.version>2.3.1</rollbar.version>
+        <rollbar.version>2.4.0</rollbar.version>
         <springsecurity.version>4.1.2</springsecurity.version>
         <ehcache.version>3.12.0</ehcache.version>
         <snakeyaml.version>2.7</snakeyaml.version>
@@ -33,13 +33,13 @@
         <compiler.version>3.16.0</compiler.version>
         <commons.version>2.22.0</commons.version>
         <commonscsv.version>1.14.1</commonscsv.version>
-        <aws.version>4.2.0</aws.version>
-        <jsoup.version>1.23.2</jsoup.version>
-        <guava.version>33.7.2-jre</guava.version>
+        <aws.version>4.2.1</aws.version>
+        <jsoup.version>1.24.1</jsoup.version>
+        <guava.version>33.8.0-jre</guava.version>
         <mime.version>4.5.14</mime.version>
-        <tika.version>4.1.0</tika.version>
+        <tika.version>4.2.0</tika.version>
         <json.version>20260814</json.version>
-        <openapi-generator.version>7.26.0</openapi-generator.version>
+        <openapi-generator.version>7.27.0</openapi-generator.version>
         <hibernate-types.version>3.16.0</hibernate-types.version>
         <modelmapper.version>3.2.8</modelmapper.version>
         <swagger-parser.version>2.1.35</swagger-parser.version>
@@ -48,13 +48,13 @@
         <maven-replacer.version>1.5.3</maven-replacer.version>
         <swagger-annotations.version>1.6.16</swagger-annotations.version>
         <springdoc.version>2.3.0</springdoc.version>
-        <hibernate.version>7.4.13.Final</hibernate.version>
+        <hibernate.version>7.4.15.Final</hibernate.version>
         <jackson.version>3.2.4</jackson.version>
         <jackson-annotations.version>2.22</jackson-annotations.version>
         <springdoc.openapi.ui.version>1.8.0</springdoc.openapi.ui.version>
-        <feignclient.version>5.0.3</feignclient.version>
-        <spring-cloud-aws.version>4.2.0</spring-cloud-aws.version>
-        <spring-security-test.version>7.1.1</spring-security-test.version>
+        <feignclient.version>5.0.4</feignclient.version>
+        <spring-cloud-aws.version>4.2.1</spring-cloud-aws.version>
+        <spring-security-test.version>7.1.2</spring-security-test.version>
         <h2.version>2.5.252</h2.version>
     </properties>
 
