@@ -47,15 +47,15 @@
         <postgres.version>42.7.14</postgres.version>
         <maven-replacer.version>1.5.3</maven-replacer.version>
         <swagger-annotations.version>1.6.16</swagger-annotations.version>
-        <springdoc.version>2.3.0</springdoc.version>
         <hibernate.version>7.4.15.Final</hibernate.version>
         <jackson.version>3.2.4</jackson.version>
         <jackson-annotations.version>2.22</jackson-annotations.version>
-        <springdoc.openapi.ui.version>1.8.0</springdoc.openapi.ui.version>
+        <springdoc.openapi.ui.version>3.2.0</springdoc.openapi.ui.version>
         <feignclient.version>5.0.4</feignclient.version>
         <spring-cloud-aws.version>4.2.1</spring-cloud-aws.version>
         <spring-security-test.version>7.1.2</spring-security-test.version>
         <h2.version>2.5.252</h2.version>
+        <legacy-jackson.version>2.22.4</legacy-jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -64,6 +64,13 @@
                 <groupId>io.awspring.cloud</groupId>
                 <artifactId>spring-cloud-aws-dependencies</artifactId>
                 <version>${aws.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${legacy-jackson.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -187,7 +194,7 @@
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${springdoc.openapi.ui.version}</version>
         </dependency>
         <dependency>
