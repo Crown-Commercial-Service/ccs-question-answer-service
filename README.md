@@ -1,14 +1,14 @@
-CCS Question and Answer Micro-Service API
+GCA Question and Answer Micro-Service API
 ===========
 
 Overview
 --------
-This is the code for the Crown Commercial Service's (_CCS_)
+This is the code for the Government Commercial Agency's (_GCA_)
 Question and Answer Micro-Service API, used by the Contract Award Service (_CAS_).
 
 Technology Overview
 ---------
-The project is implemented as a Spring Boot 3 web application, implemented using Maven.
+The project is implemented as a Spring Boot 4 web application, implemented using Maven.
 
 The core technologies for the project are:
 
