@@ -55,7 +55,7 @@
         <spring-cloud-aws.version>4.2.1</spring-cloud-aws.version>
         <spring-security-test.version>7.1.2</spring-security-test.version>
         <h2.version>2.5.252</h2.version>
-        <legacy-jackson.version>2.22.4</legacy-jackson.version>
+        <legacy-jackson.version>2.23.0</legacy-jackson.version>
         <bouncycastle.version>1.86</bouncycastle.version>
     </properties>
 
