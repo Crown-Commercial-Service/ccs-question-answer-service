@@ -4,26 +4,34 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rollbar.notifier.Rollbar;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Value;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.ccs.BLL.QuestionLogicClient;
 import uk.gov.ccs.config.SecurityConfig;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWrite;
 import uk.gov.ccs.dts.qas.model.generated.QuestionWriteResponse;
 import uk.gov.ccs.entity.Questions;
+import uk.gov.ccs.exceptions.ResourceNotFoundException;
 import uk.gov.ccs.services.QuestionService;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -41,13 +49,16 @@ class QuestionControllerTest {
     private static final String BASE_URL = "/questions";
     private static final String TEST_EVENT_ID = "TEST_12344_OCD";
     private static final String TEST_QUESTION_ID = "question 2";
-    private static final String TEST_AGREEMENT_ID = "AGR_1234";
-    private static final String TEST_LOT_ID = "LOT_5678";
+    private static final String TEST_AGREEMENT_ID = "RM1234";
+    private static final String TEST_LOT_ID = "1";
     private static final String TEST_EVENT_TYPE = "FC";
     private final String LOAD_DEFAULTS_URL = BASE_URL + "/{agreement-id}/lots/{lot-id}/{event-type}/load-default-questions";
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private QuestionController questionController;
 
     @Value("${config.security.api-key}")
     private String apiKey;
@@ -62,6 +73,12 @@ class QuestionControllerTest {
 
     @MockitoBean
     private QuestionService questionService;
+
+    private static final Pattern AGREEMENT_ID_PATTERN = Pattern.compile("^(RM[0-9]{1,10}(?:\\.[0-9]{1,5})?)$");
+
+    private static final Pattern LOT_ID_PATTERN = Pattern.compile("^([0-9]{1,5}[a-zA-Z]?)$");
+
+    private static final Pattern EVENT_TYPE_PATTERN = Pattern.compile("^([A-Z]{2,5}[0-9]?)$");
 
     @BeforeEach
     public void setUp() {
@@ -129,7 +146,7 @@ class QuestionControllerTest {
     void getQuestionsShouldAllowAuthenticatedRequests() throws Exception {
         // Arrange
         final String eventId = "EVENT_UNAUTH";
-        
+
         // Mock the service call to return an empty list
         when(questionLogicClient.getQuestionsWithEventId(eq(eventId)))
                 .thenReturn(Collections.emptyList());
@@ -152,7 +169,7 @@ class QuestionControllerTest {
     void getQuestionsShouldNotAllowUnauthenticatedRequests() throws Exception {
         // Arrange
         final String eventId = "EVENT_UNAUTH";
-        
+
         // Mock the service call to return an empty list
         when(questionLogicClient.getQuestionsWithEventId(eq(eventId)))
                 .thenReturn(Collections.emptyList());
@@ -245,7 +262,7 @@ class QuestionControllerTest {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
         QuestionWriteResponse response = givenQuestionWriteResponse();
-        
+
         when(questionLogicClient.createOrUpdateQuestions(eq(questionWrite), isNull()))
                 .thenReturn(response);
 
@@ -268,7 +285,7 @@ class QuestionControllerTest {
         QuestionWrite questionWrite = givenQuestionWrite();
         QuestionWriteResponse response = givenQuestionWriteResponse();
         String eventType = "FC";
-        
+
         when(questionLogicClient.createOrUpdateQuestions(eq(questionWrite), eq(eventType)))
                 .thenReturn(response);
 
@@ -290,7 +307,7 @@ class QuestionControllerTest {
     void createQuestionsShouldReturn204_whenNoTemplateDataExists() throws Exception {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
-        
+
         when(questionLogicClient.createOrUpdateQuestions(eq(questionWrite), isNull()))
                 .thenReturn(null);
 
@@ -423,7 +440,7 @@ class QuestionControllerTest {
     void createQuestionsShouldReturn400_whenIllegalArgumentExceptionThrown() throws Exception {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
-        
+
         when(questionLogicClient.createOrUpdateQuestions(eq(questionWrite), isNull()))
                 .thenThrow(new IllegalArgumentException("Validation error: Event type is required"));
 
@@ -442,7 +459,7 @@ class QuestionControllerTest {
     void createQuestionsShouldReturn500_whenUnexpectedExceptionThrown() throws Exception {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
-        
+
         when(questionLogicClient.createOrUpdateQuestions(eq(questionWrite), isNull()))
                 .thenThrow(new RuntimeException("Unexpected error"));
 
@@ -462,7 +479,7 @@ class QuestionControllerTest {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
         QuestionWriteResponse response = givenQuestionWriteResponse();
-        
+
         when(questionLogicClient.createOrUpdateQuestions(eq(questionWrite), isNull()))
                 .thenReturn(response);
 
@@ -483,7 +500,7 @@ class QuestionControllerTest {
         // Arrange
         QuestionWrite questionWrite = givenQuestionWrite();
         QuestionWriteResponse response = givenQuestionWriteResponse();
-        
+
         when(questionLogicClient.createOrUpdateQuestions(eq(questionWrite), isNull()))
                 .thenReturn(response);
 
@@ -666,5 +683,127 @@ class QuestionControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.path").value("/"));
+    }
+
+    private String invokeValidate(String input, Pattern pattern) {
+        return ReflectionTestUtils.invokeMethod(questionController, "validateInput", input, pattern);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "RM1",
+            "RM123",
+            "RM1234",
+            "RM1234.13",
+            "RM1234567890.12345"
+    })
+    void validateShouldReturnAgreementId_whenValid(String validAgreementId) {
+        String result = invokeValidate(validAgreementId, AGREEMENT_ID_PATTERN);
+
+        assertEquals(validAgreementId, result);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {
+            "   ",
+            "RM",
+            "rm1234",
+            "1234",
+            "RM1234.",
+            "RM1234..13",
+            "RM1234.1.2",
+            "RM12345678901",
+            "RM1234.123456",
+            "../admin",
+            "RM1234/admin",
+            "RM1234?admin=true",
+            "RM1234\nINFO: forged",
+            "<script>alert(1)</script>"
+    })
+    void validateShouldThrowAgreementNotFoundException_whenAgreementIdIsInvalid(String invalidAgreementId) {
+        assertThrows(ResourceNotFoundException.class,
+                () -> invokeValidate(invalidAgreementId, AGREEMENT_ID_PATTERN));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "1",
+            "6",
+            "8",
+            "11",
+            "1b",
+            "11B",
+            "99999z"
+    })
+    void validateShouldReturnLotId_whenValid(String validLotId) {
+        String result = invokeValidate(validLotId, LOT_ID_PATTERN);
+
+        assertEquals(validLotId, result);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {
+            "   ",
+            "b1",
+            "1ab",
+            "123456",
+            "1.5",
+            "..",
+            "1/../../etc/passwd",
+            "1<script>",
+            "1\r\n"
+    })
+    void validateShouldThrowAgreementNotFoundException_whenLotIdIsInvalid(String invalidLotId) {
+        assertThrows(ResourceNotFoundException.class,
+                () -> invokeValidate(invalidLotId, LOT_ID_PATTERN));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "RFI",
+            "EOI",
+            "FC",
+            "FC2",
+            "DA",
+            "SAS",
+            "ABCDE9"
+    })
+    void validateShouldReturnEventType_whenValid(String validEventType) {
+        String result = invokeValidate(validEventType, EVENT_TYPE_PATTERN);
+
+        assertEquals(validEventType, result);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {
+            "   ",
+            "A",
+            "ABCDEF",
+            "rfi",
+            "Fc2",
+            "2FC",
+            "FC22",
+            "FC-2",
+            "../RFI",
+            "<img src=x onerror=alert(1)>"
+    })
+    void validateShouldThrowAgreementNotFoundException_whenEventTypeIsInvalid(String invalidEventType) {
+        assertThrows(ResourceNotFoundException.class,
+                () -> invokeValidate(invalidEventType, EVENT_TYPE_PATTERN));
+    }
+
+    @Test
+    void validateShouldThrowExceptionWithStaticMessage_whenInputIsMalicious() {
+        String maliciousInput = "<script>alert('xss')</script>";
+
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> invokeValidate(maliciousInput, AGREEMENT_ID_PATTERN)
+        );
+
+        assertEquals("Resource not found", exception.getMessage());
     }
 }

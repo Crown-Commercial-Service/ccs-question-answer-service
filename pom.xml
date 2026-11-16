@@ -57,6 +57,7 @@
         <h2.version>2.5.252</h2.version>
         <legacy-jackson.version>2.23.0</legacy-jackson.version>
         <bouncycastle.version>1.87</bouncycastle.version>
+        <cloud-context.version>5.0.4</cloud-context.version>
     </properties>
 
     <dependencyManagement>
@@ -86,6 +87,11 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-context</artifactId>
+            <version>${cloud-context.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
