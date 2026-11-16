@@ -14,8 +14,9 @@ import uk.gov.ccs.exceptions.ResourceNotFoundException;
 import uk.gov.ccs.model.agreements.DataTemplate;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static uk.gov.ccs.constants.Constants.responses_Success;
 
@@ -25,9 +26,12 @@ import static uk.gov.ccs.constants.Constants.responses_Success;
 @RestController
 @RequestMapping(path = "/questions", produces = MediaType.APPLICATION_JSON_VALUE)
 public class QuestionController extends BaseController {
-
     @Autowired
     private QuestionLogicClient questionLogicClient;
+
+    private static final Pattern AGREEMENT_ID_PATTERN = Pattern.compile("^(RM[0-9]{1,10}(?:\\.[0-9]{1,5})?)$");
+    private static final Pattern LOT_ID_PATTERN = Pattern.compile("^([0-9]{1,5}[a-zA-Z]?)$");
+    private static final Pattern EVENT_TYPE_PATTERN = Pattern.compile("^([A-Z]{2,5}[0-9]?)$");
 
     /**
      * Retrieve questions for an eventId grouped into criteria and question group.
@@ -238,37 +242,66 @@ public class QuestionController extends BaseController {
             @PathVariable("event-type") String eventType,
             @RequestBody List<DataTemplate> dataTemplates) {
 
+        // First validate our input so we're sure we can proceed
+        final String validAgreementId = validateInput(agreementId, AGREEMENT_ID_PATTERN);
+        final String validLotId = validateInput(lotId, LOT_ID_PATTERN);
+        final String validEventType = validateInput(eventType, EVENT_TYPE_PATTERN);
+
         // Define the context string once for cleaner logging
-        final String context = String.format("agreementId: %s, lotId: %s", agreementId, lotId);
-        final String endpointPath = String.format("/agreements/%s/lots/%s/load-default-questions", agreementId, lotId);
+        final String context = String.format("agreementId: %s, lotId: %s", validAgreementId, validLotId);
+        final String endpointPath = String.format("/agreements/%s/lots/%s/load-default-questions", validAgreementId, validLotId);
 
         log.debug("POST /questions{} - Loading default questions for {}", endpointPath, context);
-        
+
         try {
             if (dataTemplates == null || dataTemplates.isEmpty()) {
                 log.warn("No data templates provided in request body for {}", context);
                 return ResponseEntity.badRequest()
+                        .contentType(MediaType.TEXT_PLAIN)
                         .body("Request body must contain a non-empty array of DataTemplate objects");
             }
-            
-            int count = questionLogicClient.loadDefaultQuestions(
-                dataTemplates, agreementId, lotId, eventType);
-            
+
+            int count = questionLogicClient.loadDefaultQuestions(dataTemplates, validAgreementId, validLotId, validEventType);
+
             if (count == 0) {
                 log.warn("No default questions loaded for {}", context);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .contentType(MediaType.TEXT_PLAIN)
                         .body(String.format("No default questions were found or loaded for %s.", context));
             }
 
             log.debug("Successfully loaded {} default questions for {}", count, context);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully loaded and created " + count + " default questions");
-            
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body("Successfully loaded and created " + count + " default questions");
+
         } catch (Exception ex) {
             String errorMsg = String.format("Error loading default questions for %s", context);
             log.error(errorMsg, ex);
             rollbar.error(ex, errorMsg);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.TEXT_PLAIN)
                     .body("Error loading default questions: " + ex.getMessage());
         }
+    }
+
+    /**
+     * Validates user input against a specified pattern to ensure data is in an expected format
+     */
+    private String validateInput(final String input, final Pattern pattern) {
+        // If the input is null it's automatically failed the check
+        if (input == null) {
+            throw new ResourceNotFoundException("Resource not found");
+        }
+
+        // It's not null, so not compare the value against the indicated pattern
+        Matcher matcher = pattern.matcher(input);
+
+        if (!matcher.matches()) {
+            throw new ResourceNotFoundException("Resource not found");
+        }
+
+        // There's been a match, so return the value
+        return matcher.group(1);
     }
 }
