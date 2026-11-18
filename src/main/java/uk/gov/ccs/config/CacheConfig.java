@@ -5,6 +5,7 @@ import org.ehcache.config.builders.ExpiryPolicyBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.ehcache.jsr107.Eh107Configuration;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,11 +18,12 @@ import java.time.Duration;
  * Cache setup and configuration for the application using Ehcache
  */
 @Configuration
+@EnableCaching
 public class CacheConfig {
-    @Value("${caching.primary.cacheLength}")
+    @Value("${config.caching.primary.cacheLength}")
     String primaryCacheLength;
 
-    @Value("${caching.primary.heapSize}")
+    @Value("${config.caching.primary.heapSize}")
     String primaryCacheSize;
 
     /**
@@ -36,6 +38,12 @@ public class CacheConfig {
 
         // Establish primary cache/s
         cacheManager.createCache("qAndACache", primaryCacheConfig);
+        
+        // Establish questions cache for question-related operations
+        cacheManager.createCache("questions", primaryCacheConfig);
+        
+        // Establish data templates cache for template data retrieval
+        cacheManager.createCache("dataTemplatesCache", primaryCacheConfig);
 
         return cacheManager;
     }

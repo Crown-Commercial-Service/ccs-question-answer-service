@@ -1,28 +1,28 @@
 # App info (for actuator)
 info:
   app:
-    name: CCS Question and Answer Service API
-    description: The Question and Answer Service API for the CrownCommercialService Contract Award Service
+    name: GCA Question and Answer Service API
+    description: The Question and Answer Service API for the Government Commercial Agency Contract Award Service
     version: 1.0.0
 
 # Server configuration (primarily for local dev)
 server:
   port: 4000
-  error:
-    whitelabel:
-      enabled: false
 
 # Cache length
-caching:
-  # Primary cache - 1 hour, 500 entries
-  primary:
-    cacheLength: 3600
-    heapSize: 500
+config:
+  caching:
+    # Primary cache - 1 hour, 500 entries
+    primary:
+      cacheLength: 3600
+      heapSize: 500
 
 # Error and Spring configuration
 spring:
-  profiles:
-    active: local
+  web:
+    error:
+      whitelabel:
+        enabled: false
   cloud:
     aws:
       region:
@@ -31,6 +31,21 @@ spring:
     import: optional:aws-parameterstore:/qanda/api/
   mvc:
     throw-exception-if-no-handler-found: true
+  jpa:
+    open-in-view: false
+    database: postgresql
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: qanda
+        format_sql: false
+        enable_lazy_load_no_trans: true
+  datasource:
+    hikari:
+      connectionTimeout: 10000
+      maximumPoolSize: 30
 
 # Actuator config
 management:
@@ -48,3 +63,14 @@ management:
   info:
     env:
       enabled: true
+
+# External services information
+external-services:
+  agreements-service:
+    base-path: dev.api.crowncommercial.gov.uk
+    data-templates-path: /agreements-service/agreements/{agreement-id}/lots/{lot-id}/event-types/{event-type}/data-templates
+
+# Enable log level to debug temporarily - should be removed once everything work as expected
+logging:
+  level:
+    ROOT: DEBUG
