@@ -50,7 +50,7 @@
         <hibernate.version>7.4.17.Final</hibernate.version>
         <jackson.version>3.3.0</jackson.version>
         <jackson-annotations.version>2.23</jackson-annotations.version>
-        <springdoc.openapi.ui.version>3.2.0</springdoc.openapi.ui.version>
+        <springdoc.openapi.ui.version>3.2.1</springdoc.openapi.ui.version>
         <feignclient.version>5.1.0</feignclient.version>
         <spring-cloud-aws.version>4.2.2</spring-cloud-aws.version>
         <spring-security-test.version>7.2.0</spring-security-test.version>
@@ -87,6 +87,16 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${legacy-jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${legacy-jackson.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter</artifactId>
