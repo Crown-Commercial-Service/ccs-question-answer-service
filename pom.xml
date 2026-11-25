@@ -46,7 +46,7 @@
         <hsql.version>2.7.4</hsql.version>
         <postgres.version>42.7.14</postgres.version>
         <maven-replacer.version>1.5.3</maven-replacer.version>
-        <swagger-annotations.version>1.6.16</swagger-annotations.version>
+        <swagger-annotations.version>1.6.17</swagger-annotations.version>
         <hibernate.version>7.4.15.Final</hibernate.version>
         <jackson.version>3.3.0</jackson.version>
         <jackson-annotations.version>2.23</jackson-annotations.version>
