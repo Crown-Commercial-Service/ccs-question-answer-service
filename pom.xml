@@ -19,13 +19,13 @@
         <maven.compiler.source>27</maven.compiler.source>
         <maven.compiler.target>27</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <springboot.version>4.1.2</springboot.version>
-        <selenium.version>4.52.0</selenium.version>
+        <springboot.version>4.2.0</springboot.version>
+        <selenium.version>4.53.0</selenium.version>
         <junitapi.version>6.1.3</junitapi.version>
-        <cucumber.version>8.0.4</cucumber.version>
+        <cucumber.version>8.1.0</cucumber.version>
         <testng.version>7.12.0</testng.version>
         <rollbar.version>2.4.0</rollbar.version>
-        <springsecurity.version>4.1.2</springsecurity.version>
+        <springsecurity.version>4.2.0</springsecurity.version>
         <ehcache.version>3.12.0</ehcache.version>
         <snakeyaml.version>2.7</snakeyaml.version>
         <lombok.version>1.18.48</lombok.version>
@@ -46,18 +46,18 @@
         <hsql.version>2.7.4</hsql.version>
         <postgres.version>42.7.14</postgres.version>
         <maven-replacer.version>1.5.3</maven-replacer.version>
-        <swagger-annotations.version>1.6.16</swagger-annotations.version>
-        <hibernate.version>7.4.15.Final</hibernate.version>
+        <swagger-annotations.version>1.6.17</swagger-annotations.version>
+        <hibernate.version>7.4.17.Final</hibernate.version>
         <jackson.version>3.3.0</jackson.version>
         <jackson-annotations.version>2.23</jackson-annotations.version>
         <springdoc.openapi.ui.version>3.2.0</springdoc.openapi.ui.version>
-        <feignclient.version>5.0.4</feignclient.version>
-        <spring-cloud-aws.version>4.2.1</spring-cloud-aws.version>
-        <spring-security-test.version>7.1.2</spring-security-test.version>
+        <feignclient.version>5.1.0</feignclient.version>
+        <spring-cloud-aws.version>4.2.2</spring-cloud-aws.version>
+        <spring-security-test.version>7.2.0</spring-security-test.version>
         <h2.version>2.5.252</h2.version>
         <legacy-jackson.version>2.23.0</legacy-jackson.version>
         <bouncycastle.version>1.87</bouncycastle.version>
-        <cloud-context.version>5.0.4</cloud-context.version>
+        <cloud-context.version>5.1.0</cloud-context.version>
     </properties>
 
     <dependencyManagement>
