@@ -33,7 +33,7 @@
         <compiler.version>3.16.0</compiler.version>
         <commons.version>2.22.0</commons.version>
         <commonscsv.version>1.14.1</commonscsv.version>
-        <aws.version>4.2.1</aws.version>
+        <aws.version>4.2.2</aws.version>
         <jsoup.version>1.24.1</jsoup.version>
         <guava.version>33.8.0-jre</guava.version>
         <mime.version>4.5.14</mime.version>
@@ -44,7 +44,7 @@
         <modelmapper.version>3.2.8</modelmapper.version>
         <swagger-parser.version>2.1.35</swagger-parser.version>
         <hsql.version>2.7.4</hsql.version>
-        <postgres.version>42.7.14</postgres.version>
+        <postgres.version>42.7.15</postgres.version>
         <maven-replacer.version>1.5.3</maven-replacer.version>
         <swagger-annotations.version>1.6.17</swagger-annotations.version>
         <hibernate.version>7.4.17.Final</hibernate.version>
@@ -57,7 +57,7 @@
         <h2.version>2.5.252</h2.version>
         <legacy-jackson.version>2.23.0</legacy-jackson.version>
         <bouncycastle.version>1.87</bouncycastle.version>
-        <cloud-context.version>5.1.0</cloud-context.version>
+        <cloud.version>5.1.0</cloud.version>
     </properties>
 
     <dependencyManagement>
@@ -89,8 +89,18 @@
     <dependencies>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter</artifactId>
+            <version>${cloud.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-commons</artifactId>
+            <version>${cloud.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-context</artifactId>
-            <version>${cloud-context.version}</version>
+            <version>${cloud.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
